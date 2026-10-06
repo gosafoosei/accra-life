@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Accra Life — live your Accra story</title>
+<meta name="description" content="A cosy life game set in Accra, Ghana. Ride trotro, chop waakye at Tudu, party on Oxford Street, survive dumsor, out-hustle your landlord — and make real friends. Plays free in your browser.">
+<meta name="theme-color" content="#0c120e">
+<meta property="og:title" content="Accra Life — live your Accra story">
+<meta property="og:description" content="Ride trotro, chop waakye, party in Osu, survive dumsor. A cosy life game set in Accra. Free in your browser.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ START SCREEN ============ -->
+<section id="screen-start" class="screen">
+  <div class="sky" aria-hidden="true"></div>
+  <div class="floaters" aria-hidden="true">
+    <span>🚐</span><span>🍚</span><span>🔌</span><span>🥙</span><span>🎧</span><span>🏖️</span><span>🛵</span><span>👕</span><span>🪘</span><span>⭐</span>
+  </div>
+  <div class="hero">
+    <div class="kente kente-thick" aria-hidden="true"></div>
+    <p class="hero-eyebrow">🇬🇭 Akwaaba to the city of hustle</p>
+    <h1 class="wordmark">Accra <span class="star">★</span> Life</h1>
+    <p class="tagline">Ride trotro, chop waakye at Tudu, party on Oxford Street, survive dumsor — and build your own Accra story. One decision at a time.</p>
+    <div class="chips">
+      <span class="chip">🚐 Ride trotro</span>
+      <span class="chip">🍚 Chop waakye</span>
+      <span class="chip">🔌 Survive dumsor</span>
+      <span class="chip">🏖️ Labadi weekends</span>
+      <span class="chip">👥 Make real friends</span>
+      <span class="chip">💸 Hustle in GH₵</span>
+    </div>
+    <div class="cta-row">
+      <button id="btn-new" class="btn btn-gold btn-big">Start your Accra story</button>
+      <button id="btn-continue" class="btn btn-ghost btn-big hidden">Continue playing</button>
+    </div>
+    <div class="how-row">
+      <div class="how-card">
+        <div class="how-emoji">🧑🏾</div>
+        <h3>1. Create yourself</h3>
+        <p>Pick your look, your fit and your starting hustle. Student, office guy or full-time hustler.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-emoji">🗺️</div>
+        <h3>2. Live the city</h3>
+        <p>Move through 11 real Accra spots — Makola to Legon — managing energy, food, vibes and your links.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-emoji">🏆</div>
+        <h3>3. Survive &amp; shine</h3>
+        <p>Pay the landlord, outsmart MoMo scammers, collect achievements, and turn GH₵200 into a whole life.</p>
+      </div>
+    </div>
+    <p class="fineprint">Free • No download • Saves in your browser • A love letter to Accra 🇬🇭</p>
+  </div>
+</section>
+
+<!-- ============ CREATE SCREEN ============ -->
+<section id="screen-create" class="screen hidden">
+  <div class="create-wrap">
+    <div class="panel create-panel">
+      <div class="kente" aria-hidden="true"></div>
+      <h2 class="create-title">Who is moving to Accra?</h2>
+      <label class="field-label" for="inp-name">Your name</label>
+      <div class="name-row">
+        <input id="inp-name" maxlength="18" placeholder="e.g. Kojo, Naa, Chale…" autocomplete="off">
+        <button id="btn-random-name" class="btn btn-ghost" title="Random Ghanaian name">🎲</button>
+      </div>
+
+      <p class="field-label">Skin &amp; face</p>
+      <div id="skin-swatches" class="swatch-row"></div>
+
+      <p class="field-label">Your fit</p>
+      <div id="fit-swatches" class="swatch-row"></div>
+
+      <p class="field-label">Starting hustle <span class="muted">(you keep this perk all game)</span></p>
+      <div id="hustle-cards" class="hustle-grid"></div>
+
+      <button id="btn-begin" class="btn btn-gold btn-big btn-block">Move to Accra →</button>
+      <button id="btn-back-start" class="btn btn-ghost btn-block">← Back</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GAME SCREEN ============ -->
+<section id="screen-game" class="screen hidden">
+  <header class="topbar">
+    <div class="brand-mini">Accra <span class="star">★</span> Life</div>
+    <div id="hud" class="hud"><!-- day / time / money / avatar --></div>
+    <nav class="top-actions">
+      <button id="btn-sound" class="icon-btn" title="Sound on/off">🔊</button>
+      <button id="btn-friends" class="icon-btn" title="Friends">👥</button>
+      <button id="btn-items" class="icon-btn" title="Belongings">🎒</button>
+      <button id="btn-goals" class="icon-btn" title="Achievements">🏆</button>
+      <button id="btn-help" class="icon-btn" title="How to play">❓</button>
+      <button id="btn-restart" class="icon-btn" title="Restart">🔄</button>
+    </nav>
+  </header>
+
+  <div id="statsbar" class="statsbar"><!-- stat pills --></div>
+
+  <main class="gamegrid">
+    <section class="col-main">
+      <div id="scene" class="scene-card"><!-- location scene + actions --></div>
+      <div class="panel travel-panel">
+        <h3 class="panel-title">🚏 Where to, chale?</h3>
+        <div id="travel-strip" class="travel-strip"></div>
+      </div>
+    </section>
+    <aside class="col-side">
+      <div class="panel log-panel">
+        <h3 class="panel-title">📖 Your story</h3>
+        <div id="log" class="log"></div>
+      </div>
+    </aside>
+  </main>
+</section>
+
+<!-- ============ GAME OVER SCREEN ============ -->
+<section id="screen-over" class="screen hidden">
+  <div class="create-wrap">
+    <div class="panel over-panel">
+      <div class="kente kente-thick" aria-hidden="true"></div>
+      <h2 id="over-title">Your Accra story ends here</h2>
+      <p id="over-text"></p>
+      <div id="over-stats" class="over-stats"></div>
+      <button id="btn-restart2" class="btn btn-gold btn-big btn-block">Start a new story</button>
+    </div>
+  </div>
+</section>
+
+<!-- toasts / modal / confetti -->
+<div id="toasts" aria-live="polite"></div>
+<div id="modal-root" class="modal-backdrop hidden"><div id="modal-card" class="modal-card"></div></div>
+<div id="confetti-root"></div>
+
+<noscript><p style="color:#fff;text-align:center;padding:2rem">Accra Life needs JavaScript to run. Please enable it, chale.</p></noscript>
+<script src="game.js"></script>
+</body>
+</html>
