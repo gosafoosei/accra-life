@@ -311,6 +311,22 @@ button{font-family:inherit}
 .log-entry.bad{border-color:var(--red)}
 .log-entry.gold{border-color:var(--gold)}
 
+/* ---------- world map ---------- */
+.world-panel{padding:14px}
+.world-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.world-head .panel-title{margin:0}
+.world-hint{font-size:11.5px;color:var(--muted)}
+.world-stage{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line-soft)}
+#world-canvas{width:100%;height:clamp(230px, 34vh, 380px);display:block;touch-action:none;cursor:crosshair;background:#20301f}
+.enter-pill{
+  position:absolute;left:50%;bottom:14px;transform:translateX(-50%);
+  padding:9px 18px;border-radius:99px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--gold),var(--gold-deep));color:#241a02;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.45);
+  animation:pillIn .18s ease;white-space:nowrap;max-width:calc(100% - 24px);
+}
+@keyframes pillIn{from{transform:translateX(-50%) translateY(8px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+
 /* ---------- toasts ---------- */
 #toasts{
   position:fixed;top:14px;right:14px;z-index:90;display:flex;flex-direction:column;gap:9px;

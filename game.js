@@ -40,6 +40,9 @@ const DIFFS = [
   { id:'hard',     name:'\u{1F525} Hustle Hard', desc:'Start with 0.6\u00D7 money, rent GH\u20B5 1,000, everything drains faster, wages 10% leaner. For veterans.', money:0.6, rent:1000, decay:1.25, wage:0.9 },
 ];
 
+const TITLES = ['Office Assistant', 'Junior Executive', 'Senior Executive', 'Manager', 'The Boss'];
+const titleOf = () => TITLES[Math.min(TITLES.length - 1, Math.floor((S.counters.shifts || 0) / 10))];
+
 const ITEMS = {
   powerbank: { emoji:'\u{1F50B}', name:'Power bank', price:250,  desc:'Keeps your phone alive when ECG strikes.' },
   generator: { emoji:'\u{1F50C}', name:'I-better-pass-my-neighbour generator', price:3500, desc:'Dumsor becomes somebody else\u2019s problem. Loud, but worth it.' },
@@ -99,6 +102,8 @@ const LOCS = {
         flavor:'The smoke alarm sings backup vocals. The jollof? Elite.' },
       { id:'wfh', label:'Remote gig (laptop)', icon:'\u{1F4BB}', hrs:4, eff:{en:-24, fd:-10, mo:135}, need:'laptop', needMsg:'Buy a laptop at Accra Mall (and get 30 book sense).', desc:'Emails by day, Excel by night.',
         flavor:'Zoom camera off. \u201CYour network is unstable.\u201D Accra agrees.' },
+      { id:'up1', label:'Move to self-contained', icon:'\u{1F9F1}', cost:4000, special:'homeup', to:1, showIf:()=>(S.homeLevel || 0) === 0, desc:'Your own kitchen and bath. GH\u20B5 4,000 (rent stays, sorry).' },
+      { id:'up2', label:'Upgrade to Cantonments', icon:'\u{1F3D9}\uFE0F', cost:12000, special:'homeup', to:2, showIf:()=>(S.homeLevel || 0) === 1, desc:'AC, elevator, view of somebody else\u2019s pool. GH\u20B5 12,000.' },
       { id:'waterplant', label:'Water your plant', icon:'\u{1FAB4}', hrs:1, eff:{vb:5, en:-2}, showIf:()=>S.plant, desc:'It has one job. Thrive.',
         flavor:[
           'You water your plant and tell it about your day. It thrives out of pure respect.',
@@ -464,6 +469,53 @@ const EVENTS = [
         }},
       ],
   }},
+  { id:'fuel', w:2, when:'day', choice:{
+      title:'\u26FD Fuel wahala',
+      body:'Rumour says fuel is finishing, so every station from here to Tema has a queue that could get its own postal code. A man offers you GH\u20B5 25 to hold his place while he \u201Cpicks something up.\u201D',
+      options:[
+        { label:'Hold his place (2h)', run(){
+            S.en = clamp(S.en - 10, 0, 100); earn(25); S.vb = clamp(S.vb + 4, 0, 100); S.hour = Math.min(24, S.hour + 2);
+            return 'Two hours of sun, small talk and pure street diplomacy. He returns, pays you GH\u20B5 25 and calls you \u201Ca real one.\u201D';
+        }},
+        { label:'Walk away', run(){
+            S.vb = clamp(S.vb - 2, 0, 100);
+            return 'You leave the queue to its destiny. The fuel finishes twenty minutes later. The queue stays anyway. Nobody questions it.';
+        }},
+      ],
+  }},
+  { id:'allnight', w:2, when:'night', choice:{
+      title:'\u26EA All-night service',
+      body:'Your neighbour invites you to an all-night church service — singing till sunrise, prayer like cardio, and word is the waakye at 3am is legendary.',
+      options:[
+        { label:'Go with her', run(){
+            S.en = clamp(S.en - 18, 0, 100); S.vb = clamp(S.vb + 14, 0, 100); S.sm = clamp(S.sm + 4, 0, 100); S.lk = clamp(S.lk + 5, 0, 100);
+            return 'You dance, you declare, you are \u201Ccovered.\u201D At 3am the waakye appears like a miracle with extra shito. You come home holy AND full.';
+        }},
+        { label:'Sleep instead', run(){
+            S.en = clamp(S.en + 6, 0, 100);
+            return 'You choose your bed. The singing drifts through your window till 5am. Technically, you attended — with your ears.';
+        }},
+      ],
+  }},
+  { id:'fakefit', w:2, when:'any', choice:{
+      title:'\u{1F455} Designer special',
+      body:'A hawker at Circle shows you a shirt with a logo that says \u201CGUCCY.\u201D He swears it is original even though the tag says Made in Somewhere Else. GH\u20B5 60.',
+      options:[
+        { label:'Buy the Guccy', run(){
+            S.money = Math.max(0, S.money - 60);
+            if (Math.random() < 0.5){
+              S.vb = clamp(S.vb + 12, 0, 100);
+              return 'Somehow, it works. Two strangers ask where you got it. Confidence is a fabric, chale.';
+            }
+            S.vb = clamp(S.vb - 6, 0, 100);
+            return 'The zip gives up in front of everybody. The hawker has vanished like a dream. Tuition fees, paid in full.';
+        }},
+        { label:'Respectfully decline', run(){
+            S.sm = clamp(S.sm + 2, 0, 100);
+            return 'You admire the stitching, salute the entrepreneurship, and keep your money. Growth.';
+        }},
+      ],
+  }},
   { id:'broke', w:2, when:'day', run(){
       if (S.money > 60) return null;
       S.fd = clamp(S.fd + 35, 0, 100); S.vb = clamp(S.vb + 10, 0, 100);
@@ -495,6 +547,9 @@ const ACHS = [
   { id:'harbour', icon:'\u2693', name:'Harbour Runs', desc:'Make 3 trips to Tema.', check:S => (S.counters.tema || 0) >= 3 },
   { id:'mountain', icon:'\u{1F33F}', name:'Mountain Air', desc:'Escape to Aburi twice.', check:S => (S.counters.aburi || 0) >= 2 },
   { id:'green', icon:'\u{1FAB4}', name:'Green Thumb', desc:'Keep a plant alive in East Legon.', check:S => !!S.plant },
+  { id:'home1', icon:'\u{1F9F1}', name:'Moved Up', desc:'Leave the chamber for a self-contained.', check:S => (S.homeLevel || 0) >= 1 },
+  { id:'home2', icon:'\u{1F3D9}\uFE0F', name:'Soft Life Living', desc:'Upgrade to a Cantonments apartment.', check:S => (S.homeLevel || 0) >= 2 },
+  { id:'theboss', icon:'\u{1F454}', name:'The Boss', desc:'Climb to the top job title.', check:S => (S.counters.shifts || 0) >= 40 },
 ];
 
 /* ---------------- state ---------------- */
@@ -510,7 +565,7 @@ function freshState(name, skinEmoji, fit, hustleId, diffId){
     v:1, name, skin:skinEmoji, fit:fit.id, diff:d.id,
     day:1, hour:7, loc:'home',
     money:200, wage:Math.round(130 * d.wage), en:90, fd:70, vb:65, lk:40, sm:10,
-    rent:d.rent, decayMul:d.decay,
+    rent:d.rent, decayMul:d.decay, homeLevel:0, weather:'clear',
     groceries:false, hustler:false,
     items:{ powerbank:false, generator:false, laptop:false, jersey:false },
     friends:{ kwame:15, abena:15, kofi:15, efua:15, yaw:15 },
@@ -622,7 +677,10 @@ function crashToSleep(){
 }
 function fullSleep(){
   S.day += 1; S.hour = 6;
-  S.en = clamp(S.en + 88, 0, 100); S.fd = clamp(S.fd - 26, 0, 100); S.vb = clamp(S.vb + 8, 0, 100);
+  const lvl = S.homeLevel || 0;
+  S.en = clamp(S.en + [88, 94, 100][lvl], 0, 100);
+  S.fd = clamp(S.fd - 26, 0, 100);
+  S.vb = clamp(S.vb + [8, 10, 12][lvl], 0, 100);
   newDayRoll();
 }
 function newDayRoll(){
@@ -657,6 +715,8 @@ function newDayRoll(){
     const p = pick(PHRASES);
     logMsg(`\u{1F5E3}\uFE0F Phrase of the day: \u201C${p.t}\u201D — ${p.m}`, 'gold');
   }
+  // daily weather (drives the street scene)
+  S.weather = pick(['clear', 'clear', 'clear', 'rain', 'harmattan']);
   save(); checkAchievements(); render();
 }
 function maybeEvent(when){
@@ -776,8 +836,8 @@ function handleSpecial(locId, act){
       logMsg(`Eight hours of professionalism and internal screaming. You collect ${cedis(pay)}.`, 'gold');
       if (S.counters.shifts % 10 === 0){
         S.wage += 20;
-        toast('Promotion!', `Your boss calls you \u201Cthe future.\u201D Wage is now ${cedis(S.wage)} per shift.`, 'good', 6500);
-        logMsg(`PROMOTION. New wage: ${cedis(S.wage)} per shift.`, 'gold');
+        toast('Promotion!', `You\u2019re now ${titleOf()}. Wage is ${cedis(S.wage)} per shift.`, 'good', 6500);
+        logMsg(`PROMOTION. You are now ${titleOf()}. New wage: ${cedis(S.wage)} per shift.`, 'gold');
         confetti();
       }
       break;
@@ -824,6 +884,19 @@ function handleSpecial(locId, act){
       logMsg('You carry a little garden plant all the way from the Aburi hills to East Legon. Your chamber has a new flatmate — quiet, green, judgemental.', 'gold');
       toast('New flatmate!', '\u{1FAB4} A plant now lives with you. Water it at home for steady vibes.', 'good', 6000);
       break;
+    case 'homeup': {
+      const lvl = act.to;
+      spend(act.cost); S.homeLevel = lvl; advanceHours(2);
+      if (lvl === 1){
+        logMsg('You move out of the chamber into a self-contained. Your own kitchen! Your own bath! You open the door twelve times just to feel it.', 'gold');
+        toast('New digs!', '\u{1F9F1} Self-contained unlocked. You sleep deeper now (+6 energy, +2 vibes per night).', 'good', 6500);
+      } else {
+        logMsg('You upgrade to a Cantonments apartment. The AC hums, the tiles shine, and somewhere below, Accra glitters. You built that.', 'gold');
+        toast('Top tier!', '\u{1F3D9}\uFE0F Cantonments apartment unlocked. Full sleep and +12 morning vibes. Soft life: achieved.', 'ach', 7000);
+        confetti();
+      }
+      break;
+    }
     case 'buy': {
       const item = ITEMS[act.item];
       spend(item.price); S.items[act.item] = true;
@@ -862,6 +935,7 @@ function travelTo(locId, t){
   S.loc = locId;
   if (locId === 'tema') S.counters.tema = (S.counters.tema || 0) + 1;
   if (locId === 'aburi') S.counters.aburi = (S.counters.aburi || 0) + 1;
+  if (window.World) World.placeAt(locId);
   sfx('click');
   const notes = {
     trotro:'The mate shouts your stop like a prophecy. You arrive.', 
@@ -1087,13 +1161,16 @@ function openHelp(){
     <p class="m-body">You manage four stats — \u26A1 Energy, \u{1F35A} Food, \u{1F60A} Vibes and \u{1F465} Links — plus your money and your book sense.
 
     \u{1F690} Travel between neighbourhoods by trotro, keke, Bolt or leg-power.
+    \u{1F6B6}\u{1F3FE} Or walk the streets yourself: WASD / arrow keys on desktop, tap anywhere on the map on mobile, then press E (or the gold button) to enter a building. Walking is free — it\u2019s good for the soul.
     \u{1F4BC} Work shifts at Airport City (weekdays only) to earn. Every 10 shifts = a raise.
     \u{1F35A} Eat before your food bar empties, or your vibes will suffer.
     \u{1F3E0} Rent is due on the 1st of every month — how much depends on the difficulty you picked (GH\u20B5 650 / 800 / 1,000). Miss it too long and the story ends.
     \u{26BD} Match days happen everywhere — even the Tema harbour has a derby.
     \u{1F50C} Dumsor hits at night. Power bank softens it; generator ends it.
     \u{1F465} Link up with friends to build your circle — good friends even send you support.
-    \u{1F3C6} Unlock all 22 achievements. Save happens automatically in your browser.
+    \u{1F3C6} Unlock all 25 achievements. Save happens automatically in your browser.
+    \u{1F9F1} Save up and upgrade your home: chamber \u2192 self-contained \u2192 Cantonments. Better sleep, better vibes.
+    \u{1F454} Work shifts to climb from Office Assistant all the way to The Boss.
     \u{1F389} Every 6th month is Detty Season — parties hit harder and Accra never sleeps.
     \u{1F5E3}\uFE0F Tap \u{1F5E3}\uFE0F for the pocket phrasebook; new phrases land in your story most mornings.
     \u{1F4E4} Hit \u{1F4E4} anytime to turn your run into a share card for the group chat.
@@ -1180,10 +1257,12 @@ function render(){
     else if (a.weekdaysOnly && isWeekend()){ disabled = true; warn = 'Weekends: office closed.'; }
     else if (a.minHour !== undefined && S.hour < a.minHour){ disabled = true; warn = 'Opens at 7pm.'; }
     else if (enCost && S.en < enCost + 4){ disabled = true; warn = 'Too tired — sleep first.'; }
+    let desc = a.desc;
+    if (a.id === 'work') desc = `Title: ${titleOf()} · every 10 shifts = a raise.`;
     const costTag = cost ? `<span class="a-cost">${cedis(cost)}</span>` : eff.mo ? `<span class="a-cost">+GH\u20B5</span>` : '';
     return `<button class="action-btn" data-act="${a.id}" ${disabled ? 'disabled' : ''}>
       <span class="a-top"><span class="a-emoji">${a.icon}</span>${esc(a.label)}${costTag}</span>
-      <p class="a-desc">${esc(a.desc)}</p>
+      <p class="a-desc">${esc(desc)}</p>
       ${warn ? `<p class="a-warn">${esc(warn)}</p>` : ''}
     </button>`;
   }).join('');
@@ -1218,6 +1297,8 @@ function render(){
       <span class="lt">Day ${e.d} · ${hourLabel(e.h)}</span>
       <p>${esc(e.t)}</p>
     </div>`).join('') || '<p class="muted">Your story starts now…</p>';
+
+  if (window.World) World.sync();
 }
 
 /* ---------------- creation screen ---------------- */
@@ -1257,7 +1338,7 @@ function boot(){
     if (saved){
       S = saved;
       // backfill fields added after first release
-      S.rent = S.rent || MONTH_RENT; S.decayMul = S.decayMul || 1;
+      S.rent = S.rent || MONTH_RENT; S.decayMul = S.decayMul || 1; S.homeLevel = S.homeLevel || 0;
       showScreen('game'); render();
     }
   });

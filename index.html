@@ -114,6 +114,16 @@
 
   <main class="gamegrid">
     <section class="col-main">
+      <div class="world-panel panel">
+        <div class="world-head">
+          <h3 class="panel-title">🚶🏾‍♂️ Accra streets</h3>
+          <span class="world-hint">WASD / arrows to walk · tap to move · E or the button to enter</span>
+        </div>
+        <div class="world-stage">
+          <canvas id="world-canvas"></canvas>
+          <button id="enter-pill" class="enter-pill hidden"></button>
+        </div>
+      </div>
       <div id="scene" class="scene-card"><!-- location scene + actions --></div>
       <div class="panel travel-panel">
         <h3 class="panel-title">🚏 Where to, chale?</h3>
@@ -149,5 +159,6 @@
 
 <noscript><p style="color:#fff;text-align:center;padding:2rem">Accra Life needs JavaScript to run. Please enable it, chale.</p></noscript>
 <script src="game.js"></script>
+<script src="world.js"></script>
 </body>
 </html>
