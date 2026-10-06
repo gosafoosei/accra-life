@@ -45,6 +45,20 @@
     { x: 520, y: 660 }, { x: 160, y: 860 }, { x: 760, y: 610 }, { x: 1120, y: 620 },
     { x: 660, y: 800 }, { x: 940, y: 800 }, { x: 130, y: 360 }, { x: 1170, y: 850 },
   ];
+  const CROSSINGS = [
+    { x: 640, y: 250 }, { x: 1005, y: 450 }, { x: 830, y: 250 }, { x: 640, y: 450 },
+  ];
+  const LAMPS = [
+    { x: 610, y: 220 }, { x: 1035, y: 220 }, { x: 610, y: 480 }, { x: 1035, y: 480 },
+    { x: 300, y: 420 }, { x: 300, y: 730 }, { x: 1300, y: 480 }, { x: 860, y: 90 },
+  ];
+  const AWNS = {
+    makola: ['#e0463f', '#f2c94c', '#2e9e5b'],
+    waakye: ['#f2c94c', '#e0463f', '#f2c94c', '#2e9e5b'],
+    circle: ['#2e9e5b', '#f2c94c', '#e0463f'],
+    chopbar: ['#f2c94c', '#2e9e5b', '#e0463f'],
+    osu: ['#7fb3ff', '#ff7fa5', '#7fb3ff', '#f2c94c'],
+  };
 
   /* ---------------- state ---------------- */
   const canvas = $('#world-canvas');
@@ -233,18 +247,36 @@
     ctx.closePath();
   }
   function drawWorld(t){
+    const night = S.hour >= 19 || S.hour < 6;
     // ground
     ctx.fillStyle = '#20301f'; ctx.fillRect(0, 0, viewW, viewH);
     ctx.save(); ctx.translate(-cam.x, -cam.y);
     ctx.textAlign = 'left';
+    // ground texture dots (only the visible band)
+    ctx.fillStyle = 'rgba(255,255,255,.025)';
+    const gx0 = Math.floor(cam.x / 60) * 60, gy0 = Math.floor(cam.y / 60) * 60;
+    for (let gx = gx0; gx < cam.x + viewW + 60; gx += 60){
+      for (let gy = gy0; gy < cam.y + viewH + 60; gy += 60){
+        if (gx >= 0 && gy >= 0 && gx <= WORLD_W && gy <= WORLD_H) ctx.fillRect(gx, gy, 2, 2);
+      }
+    }
     // grass patches
     ctx.fillStyle = '#2a4028';
     for (const g of GRASS){ roundRect(g.x, g.y, g.w, g.h, 24); ctx.fill(); }
     // ocean (bottom-right coast)
-    ctx.fillStyle = '#134864';
+    const sea = ctx.createLinearGradient(950, WORLD_H, WORLD_W, 580);
+    sea.addColorStop(0, '#175d80'); sea.addColorStop(1, '#0d3a52');
+    ctx.fillStyle = sea;
     ctx.beginPath();
     ctx.moveTo(950, WORLD_H); ctx.lineTo(WORLD_W, 580); ctx.lineTo(WORLD_W, WORLD_H);
     ctx.closePath(); ctx.fill();
+    // shimmer flecks on the water
+    ctx.fillStyle = 'rgba(255,248,231,.07)';
+    for (let i = 0; i < 7; i++){
+      const sx = 1000 + (i * 65) % 380 + Math.sin(t * 1.2 + i * 2) * 8;
+      const sy = 940 - 0.8 * (sx - 950) + 18 + (i * 37) % 55;
+      ctx.beginPath(); ctx.ellipse(sx, sy, 15, 2.2, 0, 0, 7); ctx.fill();
+    }
     ctx.strokeStyle = 'rgba(255,248,231,.5)'; ctx.lineWidth = 3;
     ctx.beginPath();
     const wob = Math.sin(t * 1.6) * 6;
@@ -255,12 +287,34 @@
     // sand strip
     ctx.strokeStyle = '#d8c48a'; ctx.lineWidth = 9;
     ctx.beginPath(); ctx.moveTo(952, WORLD_H); ctx.lineTo(WORLD_W, 584); ctx.stroke();
-    // roads
-    ctx.strokeStyle = '#3a3f3a'; ctx.lineWidth = 26;
-    for (const r of ROADS){ ctx.beginPath(); ctx.moveTo(r.x1, r.y1); ctx.lineTo(r.x2, r.y2); ctx.stroke(); }
-    ctx.strokeStyle = 'rgba(242,201,76,.45)'; ctx.lineWidth = 1.6; ctx.setLineDash([14, 16]);
+    // roads with sidewalks
+    for (const r of ROADS){
+      ctx.strokeStyle = '#454b44'; ctx.lineWidth = 34;
+      ctx.beginPath(); ctx.moveTo(r.x1, r.y1); ctx.lineTo(r.x2, r.y2); ctx.stroke();
+      ctx.strokeStyle = '#333833'; ctx.lineWidth = 26;
+      ctx.beginPath(); ctx.moveTo(r.x1, r.y1); ctx.lineTo(r.x2, r.y2); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(242,201,76,.5)'; ctx.lineWidth = 1.6; ctx.setLineDash([14, 16]);
     for (const r of ROADS){ ctx.beginPath(); ctx.moveTo(r.x1, r.y1); ctx.lineTo(r.x2, r.y2); ctx.stroke(); }
     ctx.setLineDash([]);
+    // zebra crossings at busy junctions
+    ctx.fillStyle = 'rgba(255,248,231,.32)';
+    for (const c of CROSSINGS){
+      for (let i = -2; i <= 2; i++) ctx.fillRect(c.x - 13, c.y + i * 7 - 2, 26, 4);
+    }
+    // street lamps
+    for (const L of LAMPS){
+      ctx.strokeStyle = '#0d100d'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(L.x, L.y); ctx.lineTo(L.x, L.y - 12); ctx.stroke();
+      ctx.fillStyle = night ? '#ffd166' : '#3a3f3a';
+      ctx.beginPath(); ctx.arc(L.x, L.y - 13, 2.5, 0, 7); ctx.fill();
+      if (night){
+        const lg = ctx.createRadialGradient(L.x, L.y - 12, 2, L.x, L.y - 12, 34);
+        lg.addColorStop(0, 'rgba(255,209,102,.26)'); lg.addColorStop(1, 'rgba(255,209,102,0)');
+        ctx.fillStyle = lg;
+        ctx.beginPath(); ctx.arc(L.x, L.y - 12, 34, 0, 7); ctx.fill();
+      }
+    }
     // trees
     ctx.font = '20px "Segoe UI Emoji", Arial';
     for (const tr of TREES) ctx.fillText('🌴', tr.x, tr.y);
@@ -279,6 +333,25 @@
       g.addColorStop(0, loc.g1); g.addColorStop(1, loc.g2);
       ctx.fillStyle = g;
       roundRect(s.x - BUILDING_W / 2, s.y - BUILDING_H / 2, BUILDING_W, BUILDING_H, 10); ctx.fill();
+      // roof cap (fake height)
+      ctx.fillStyle = 'rgba(255,255,255,.09)';
+      roundRect(s.x - BUILDING_W / 2 + 4, s.y - BUILDING_H / 2 + 4, BUILDING_W - 8, 7, 4); ctx.fill();
+      // windows: dark panes by day, warm glow at night
+      for (let wy = 0; wy < 2; wy++){
+        for (let wx = 0; wx < 3; wx++){
+          const lit = night && ((wx * 3 + wy + id.length) % 3 !== 0);
+          ctx.fillStyle = lit ? '#ffd166' : (night ? '#0b0f0b' : 'rgba(10,14,10,.35)');
+          ctx.fillRect(s.x - 21 + wx * 15, s.y - 13 + wy * 13, 9, 7);
+        }
+      }
+      // door
+      ctx.fillStyle = 'rgba(0,0,0,.42)';
+      ctx.fillRect(s.x - 5, s.y + BUILDING_H / 2 - 13, 10, 13);
+      // market awnings
+      if (AWNS[id]){
+        const cols = AWNS[id];
+        for (let i = 0; i < 6; i++){ ctx.fillStyle = cols[i % cols.length]; ctx.fillRect(s.x - BUILDING_W / 2 + 4 + i * 9, s.y - BUILDING_H / 2 + 13, 9, 5); }
+      }
       if (isHere || isNear){
         ctx.strokeStyle = isHere ? '#f2c94c' : 'rgba(242,201,76,.7)';
         ctx.lineWidth = isHere ? 2.5 : 1.5;
@@ -286,16 +359,8 @@
         roundRect(s.x - BUILDING_W / 2 - 4, s.y - BUILDING_H / 2 - 4, BUILDING_W + 8, BUILDING_H + 8, 12); ctx.stroke();
         ctx.setLineDash([]);
       }
-      // windows (lit at night)
-      const night = S.hour >= 19 || S.hour < 6;
-      if (night){
-        ctx.fillStyle = '#ffd166';
-        for (let wy = 0; wy < 2; wy++) for (let wx = 0; wx < 3; wx++){
-          if ((wx * 3 + wy + id.length) % 3 !== 0) ctx.fillRect(s.x - 20 + wx * 15, s.y - 14 + wy * 15, 8, 7);
-        }
-      }
       ctx.font = '20px "Segoe UI Emoji", Arial'; ctx.textAlign = 'center';
-      ctx.fillText(loc.emoji, s.x, s.y + 7);
+      ctx.fillText(loc.emoji, s.x, s.y + 9);
       ctx.fillStyle = night ? 'rgba(255,248,231,.85)' : 'rgba(255,248,231,.6)';
       ctx.font = '600 10.5px Inter, Arial';
       ctx.fillText(loc.short.toUpperCase(), s.x, s.y + BUILDING_H / 2 + 13);
@@ -306,6 +371,10 @@
       const r = c.road, px = r.x1 + (r.x2 - r.x1) * c.pos, py = r.y1 + (r.y2 - r.y1) * c.pos;
       const ang = Math.atan2(r.y2 - r.y1, r.x2 - r.x1) + (c.dir < 0 ? Math.PI : 0);
       ctx.save(); ctx.translate(px, py); ctx.rotate(ang);
+      if (night){
+        ctx.fillStyle = 'rgba(255,230,150,.45)';
+        ctx.beginPath(); ctx.moveTo(13, -5); ctx.lineTo(36, -11); ctx.lineTo(36, 9); ctx.lineTo(13, 4); ctx.closePath(); ctx.fill();
+      }
       ctx.fillStyle = 'rgba(0,0,0,.3)'; roundRect(-13, -5, 27, 13, 4); ctx.fill();
       ctx.fillStyle = c.color; roundRect(-13, -7, 26, 13, 4); ctx.fill();
       ctx.fillStyle = 'rgba(20,30,40,.85)'; roundRect(1, -5, 7, 9, 2); ctx.fill();
@@ -314,13 +383,15 @@
     }
     // pedestrians
     for (const p of peds){
+      const bob = p.tx !== null ? Math.abs(Math.sin(t * 7 + p.x * 0.13)) * 1.5 : 0;
+      const py = p.y - bob;
       ctx.fillStyle = 'rgba(0,0,0,.3)';
       ctx.beginPath(); ctx.ellipse(p.x, p.y + 7, 5, 2, 0, 0, 7); ctx.fill();
-      ctx.fillStyle = p.color; roundRect(p.x - 4, p.y - 4, 8, 10, 3); ctx.fill();
-      ctx.fillStyle = '#6b4632'; ctx.beginPath(); ctx.arc(p.x, p.y - 7, 4, 0, 7); ctx.fill();
+      ctx.fillStyle = p.color; roundRect(p.x - 4, py - 4, 8, 10, 3); ctx.fill();
+      ctx.fillStyle = '#6b4632'; ctx.beginPath(); ctx.arc(p.x, py - 7, 4, 0, 7); ctx.fill();
       if (S.weather === 'rain'){
         ctx.strokeStyle = '#7fb3ff'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(p.x, p.y - 12, 7, Math.PI, 0); ctx.stroke();
+        ctx.beginPath(); ctx.arc(p.x, py - 12, 7, Math.PI, 0); ctx.stroke();
       }
     }
     // player
@@ -340,6 +411,10 @@
       for (const d of rainDrops){ ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 3, d.y - 12); }
       ctx.stroke();
     }
+    // vignette for depth
+    const vg = ctx.createRadialGradient(viewW / 2, viewH / 2, Math.min(viewW, viewH) * 0.42, viewW / 2, viewH / 2, Math.max(viewW, viewH) * 0.78);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.30)');
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, viewW, viewH);
   }
   function drawPlayer(t){
     const px = player.x, py = player.y + (player.moving ? Math.abs(Math.sin(player.phase)) * -2.5 : 0);
