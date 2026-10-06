@@ -31,6 +31,7 @@ Progress auto-saves to your browser's localStorage.
 | **13 locations around Ghana** | Home (East Legon), Makola Market, Oxford Street Osu, Labadi Beach, Tudu waakye joint, Dansoman chop bar, Kwame Nkrumah Circle, Airport City offices, Legon, Accra Mall, Jamestown & Bukom — plus day trips to Tema Harbour and the Aburi Botanical Gardens (out-of-town fares apply) |
 | **4 life stats** | ⚡ Energy, 🍚 Food, 😊 Vibes, 👥 Links — plus money (GH₵) and 📚 book sense |
 | **Travel** | Trotro (cheap), keke (fun), Bolt (dignified) or walking — each with different cost, time and side effects |
+| **🚶 Interactive street map** | A living top-down Accra you can actually walk: WASD / arrow keys or tap-to-move, with traffic, pedestrians, day/night lighting and weather. Walk up to any building and press E (or the gold button) to enter it — walking is free, riding costs the usual fares |
 | **Random events** | Dumsor, go slow traffic, rains, MoMo promo scams, trotro mate fare arguments, kelewele auntie, jollof debates, Black Stars match days, the Tema harbour derby, friend invitations, ECG bills, weddings, water outages, phone snatchers, trotro sermons, WhatsApp-status sales, fuel queues, all-night services, designer-shirt scams, found money… |
 | **Detty Season** | Every 6th month the city turns up — party vibes +50%, a HUD badge, and an exclusive achievement |
 | **Economy** | Shifts at an Airport City job (raises every 10 shifts), market hustles, remote gigs (needs a laptop), rent of GH₵ 800 due on the 1st of every month |

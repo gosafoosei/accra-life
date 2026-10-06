@@ -51,11 +51,56 @@ const ITEMS = {
 };
 
 const FRIENDS = {
-  kwame: { name:'Kwame', tag:'Office guy', emoji:'\u{1F57A}', line:'Knows every happy hour on Oxford Street by heart.' },
-  abena: { name:'Abena', tag:'Designer', emoji:'\u{1F487}\u{1F3FE}\u200D\u2640\uFE0F', line:'Can price any fabric in Makola by touching it.' },
-  kofi:  { name:'Kofi', tag:'Legon scholar', emoji:'\u{1F913}', line:'Argues about jollof with citations.' },
-  efua:  { name:'Efua', tag:'Food blogger', emoji:'\u{1F469}\u{1F3FE}\u200D\u{1F373}', line:'Ranks waakye joints the way Michelin ranks restaurants.' },
-  yaw:   { name:'Yaw', tag:'Bukom boxer', emoji:'\u{1F94A}', line:'Throws hands at the gym and poses at every party.' },
+  kwame: { name:'Kwame', tag:'Office guy', emoji:'\u{1F57A}', line:'Knows every happy hour on Oxford Street by heart.',
+    lines:{
+      hi:['How far chale! Office dey finish me o \u{1F629}', 'My guy! You wake at all?'],
+      link:['Osu tonight? I know the DJ \u{1F57A}', 'Say when and where — I dey come with vibes'],
+      food:['Bro, banku after work? \u{1F41F}', 'I only eat to survive jollof season \u{1F35A}'],
+      money:['MoMo dey dry for my side too \u{1F602}', 'When promotion enter, first round na my own \u{1F91D}'],
+      party:['Last night was MOVIE \u{1F3AC} my legs still dey file complaint', 'Detty season don enter your body? \u{1F602}'],
+      dumsor:['ECG took my FIFA match mid-tournament \u{1F624}', 'Neighbour\u2019s generator 1, my sleep 0'],
+      any:['Abeg how that hustle dey go?', 'This city no dey sleep — we too no go sleep', 'Send credit abeg \u{1F623}'],
+    } },
+  abena: { name:'Abena', tag:'Designer', emoji:'\u{1F487}\u{1F3FE}\u200D\u2640\uFE0F', line:'Can price any fabric in Makola by touching it.',
+    lines:{
+      hi:['Hey you! Fabric shipment landed today \u{1F9F5}', 'Morning! This Accra sun no dey play'],
+      link:['Come to the studio, I need eyes on this kente piece \u{1F3A8}', 'Osu? I go show you the new collection'],
+      food:['Waakye talk later — I dey on cassava duty \u{1F37D}\uFE0F', 'Feed me and I go design you something \u{1F440}'],
+      money:['Customer paid late again. We move \u{1F643}', 'Money talks, fabric whispers \u{1F9F5}'],
+      party:['I dey plan Detty outfit since January \u{1F483}', 'Party? Say less.'],
+      dumsor:['My sewing machine died mid-dress. ECG, why \u{1F62D}', 'Candlelight studio era \u{1F56F}\uFE0F'],
+      any:['That colour go fit you die', 'Makola prices rose again, chale', 'You good? Text me if anything \u{1F9E1}'],
+    } },
+  kofi: { name:'Kofi', tag:'Legon scholar', emoji:'\u{1F913}', line:'Argues about jollof with citations.',
+    lines:{
+      hi:['Greetings, scholar of the streets \u{1F913}', 'I dey Balme — the Wi-Fi dey fight me'],
+      link:['Legon? The palms miss you \u{1F334}', 'Come, we argue about something productive'],
+      food:['Waakye is just rice and beans with ambition \u{1F4CA}', 'Cafeteria jollof: 6/10. Don\u2019t @ me'],
+      money:['Book fees dey hungry my account \u{1F4DA}', 'Rich friends are a strategy, no offence \u{1F480}'],
+      party:['Reading week\u2026 but one small party won\u2019t hurt \u{1F92B}', 'Detty season vs first class. We shall see.'],
+      dumsor:['Studied by candlelight. Very aesthetic, very annoying \u{1F56F}\uFE0F', 'Dumsor closed my tabs. All of them.'],
+      any:['Fun fact: trotro economics mirror game theory', 'Confidence is 80% of knowledge \u{1F393}', 'Keep pushing — the data supports it'],
+    } },
+  efua: { name:'Efua', tag:'Food blogger', emoji:'\u{1F469}\u{1F3FE}\u200D\u{1F373}', line:'Ranks waakye joints the way Michelin ranks restaurants.',
+    lines:{
+      hi:['Chale! New chop spot just dropped \u{1F440}', 'I dey taste-menu this morning. Tough job \u{1F60B}'],
+      link:['Come, we review something deep-fried \u{1F364}', 'Labadi then kelewele after? I\u2019m driving'],
+      food:['Rate your last waakye — gari ratio matters \u{1F4DD}', 'Shito levels today: unsafe. Perfect.'],
+      money:['Blogging pays in food, mostly \u{1F37D}\uFE0F', 'Sponsorship coming\u2026 one day \u{1F623}'],
+      party:['The party small chops were 9/10, the people 10/10', 'Where the food at? I dey come \u{1F3C3}\u{1F3FE}\u200D\u2640\uFE0F'],
+      dumsor:['My freezer\u2026 my poor frozen berries \u{1F62D}', 'Dumsor can\u2019t stop the review grind \u{1F526}\uFE0F'],
+      any:['Send the location of that place you mentioned', 'Eating is research. Trust the process', 'That joint you talked about — blog post loading \u{1F4F8}'],
+    } },
+  yaw: { name:'Yaw', tag:'Bukom boxer', emoji:'\u{1F94A}', line:'Throws hands at the gym and poses at every party.',
+    lines:{
+      hi:['Boxer! How body? \u{1F4AA}\u{1F3FE}', 'Morning training done. You dey slack o \u{1F929}'],
+      link:['Gym then beach? Sweat then waves \u{1F94A}', 'Pull up Bukom, I go show you small combos'],
+      food:['Protein chale, protein \u{1F41F}', 'Banku dey build champions \u{1F4AA}\u{1F3FE}'],
+      money:['Fight purse small but we dey \u{1F624}', 'Wins dey come. Money go follow.'],
+      party:['Party? I dey show them one or two steps \u{1F602}', 'Who dey DJ? I need the tracklist for training'],
+      dumsor:['Training by phone torch. Old school \u{1F4F1}', 'No light, no problem — the bag no need light \u{1F94A}'],
+      any:['Discipline na everything', 'Small small, muscle go come', 'That your gym thing — how far? \u{1F440}'],
+    } },
 };
 const FRIEND_SPOTS = [
   { place:'a waakye spot in Tudu', cost:25,  emoji:'\u{1F35A}' },
@@ -570,6 +615,7 @@ function freshState(name, skinEmoji, fit, hustleId, diffId){
     items:{ powerbank:false, generator:false, laptop:false, jersey:false },
     friends:{ kwame:15, abena:15, kofi:15, efua:15, yaw:15 },
     rentDue:false, rentLateDays:0, startedMonth:1, snapEarned:0, plant:false,
+    phone:{ threads:{}, unread:{}, lastDay:{} },
     counters:{ waakye:0, parties:0, dumsor:0, beach:0, shifts:0, hangs:0, jollof:0, gym:0, rentPaid:0, earned:0, spent:0, dettyParties:0, tema:0, aburi:0 },
     ach:{}, log:[],
   };
@@ -638,7 +684,7 @@ function confetti(){
 
 /* ---------------- modal ---------------- */
 function showModal(html){ $('#modal-card').innerHTML = html; $('#modal-root').classList.remove('hidden'); }
-function closeModal(){ $('#modal-root').classList.add('hidden'); }
+function closeModal(){ $('#modal-root').classList.add('hidden'); if (typeof openChatId !== 'undefined') openChatId = null; }
 function modalButtons(list){
   return `<div class="m-btns">${list.map((b, i) =>
     `<button class="btn ${b.cls || 'btn-ghost'}" data-mb="${i}">${b.label}</button>`).join('')}</div>`;
@@ -715,6 +761,8 @@ function newDayRoll(){
     const p = pick(PHRASES);
     logMsg(`\u{1F5E3}\uFE0F Phrase of the day: \u201C${p.t}\u201D — ${p.m}`, 'gold');
   }
+  // friends text you on the in-game phone
+  morningTexts();
   // daily weather (drives the street scene)
   S.weather = pick(['clear', 'clear', 'clear', 'rain', 'harmattan']);
   save(); checkAchievements(); render();
@@ -773,6 +821,12 @@ function doAction(locId, act){
     advanceHours(act.hrs || 1);
     let msg = (act.flavor ? pick([].concat(act.flavor)) : pick(loc.flavor));
     logMsg(`${act.icon} ${act.label} — ${msg}`, 'good');
+    if (act.id === 'study' || act.id === 'lecture'){
+      maybeText('kofi', pick([
+        'Studying?? Character development \u{1F914}\u{1F4DA}',
+        'Library bros. The palms noticed you \u{1F334}',
+      ]), 0.35);
+    }
     // one random event per action, weighted by time spent
     if (Math.random() < Math.min(0.5, 0.13 * (act.hrs || 1))){
       fireEvent(maybeEvent(pick(['any','any','night'])));
@@ -823,6 +877,11 @@ function handleSpecial(locId, act){
         'The waakye line parts for you. You\u2019re a regular now — it\u2019s official.',
         'Gari, spaghetti, shito, egg. The plate looks back at you with respect.',
       ]), 'gold');
+      maybeText('efua', pick([
+        'Waakye again?! Your loyalty is blog-worthy \u{1F4D3}',
+        'Rate that plate out of 10 — for the blog \u{1F440}',
+        'Shito levels today? I need data for the rankings \u{1F4C9}\u2197\uFE0F',
+      ]), 0.5);
       break;
     case 'kelewele':
       spend(act.cost); applyEff(act.eff); advanceHours(act.hrs);
@@ -834,6 +893,10 @@ function handleSpecial(locId, act){
       const pay = S.wage; earn(pay);
       S.counters.shifts++;
       logMsg(`Eight hours of professionalism and internal screaming. You collect ${cedis(pay)}.`, 'gold');
+      maybeText('kwame', pick([
+        'Shift brothers for life \u{1F91D} same time tomorrow?',
+        'You survived another one. The AC alone is worth it \u{1F929}',
+      ]), 0.3);
       if (S.counters.shifts % 10 === 0){
         S.wage += 20;
         toast('Promotion!', `You\u2019re now ${titleOf()}. Wage is ${cedis(S.wage)} per shift.`, 'good', 6500);
@@ -856,6 +919,11 @@ function handleSpecial(locId, act){
         'Somewhere between the second song and the fourth, your week repairs itself.',
         'You meet five people and remember two names. Perfect ratio.',
       ]), 'gold');
+      maybeText('kwame', pick([
+        'Last night was MOVIE \u{1F3AC} my legs still dey file complaint',
+        'We turned UP. Same time next week? \u{1F57A}',
+        'I lost my voice but found a whole new playlist \u{1F3A7}',
+      ]), 0.45);
       break;
     case 'network': {
       advanceHours(act.hrs); applyEff({ en:act.eff.en, lk:act.eff.lk });
@@ -871,6 +939,10 @@ function handleSpecial(locId, act){
       applyEff(act.eff); S.counters.gym++; advanceHours(act.hrs);
       if (S.counters.gym === 5) { logMsg('Five sessions in. Your reflection at the lighthouse window nods approvingly.', 'gold'); }
       logMsg('You train in Bukom, where every coach has trained a champion. You are tired in a holy way.', 'good');
+      maybeText('yaw', pick([
+        'You train today? I felt it in the air \u{1F94A}',
+        'Bukom reports progress. Keep punching \u{1F4AA}\u{1F3FE}',
+      ]), 0.5);
       break;
     case 'portload': {
       applyEff({ en:act.eff.en, fd:act.eff.fd });
@@ -903,6 +975,18 @@ function handleSpecial(locId, act){
       advanceHours(1);
       logMsg(`You buy the ${item.name} for ${cedis(item.price)}. ${item.desc}`, 'gold');
       toast('New item!', `${item.emoji} ${item.name} added to your belongings.`, 'good');
+      if (act.item === 'jersey') maybeText('abena', pick([
+        'MATCH DAY READY \u{1F455}\u{1F525} wear it well o',
+        'Jersey fit check!! Send photo \u{1F4F8}',
+      ]), 0.7);
+      if (act.item === 'laptop') maybeText('abena', pick([
+        'Laptop era!! Work from bed loading \u{1F4BB}\u{1F602}',
+        'Now you have zero excuse. Freelance life \u{1F4BB}\u2728',
+      ]), 0.7);
+      if (act.item === 'generator') maybeText('kwame', pick([
+        'You bought GENERATOR? Pull up — I dey bring extension board \u{1F602}\u{1F50C}',
+        'Generator Mafia confirmed \u{1F50C}\u{1F4AF}',
+      ]), 0.8);
       break;
     }
   }
@@ -987,6 +1071,11 @@ function hangout(id){
   applyEff({ vb:11, lk:9, en:-10 });
   advanceHours(2);
   logMsg(`${spot.emoji} You and ${f.name} pull up to ${spot.place}. ${S.friends[id] >= 80 ? 'Day-one behaviour. This friendship is load-bearing now.' : 'The friendship grows one good story stronger.'}`, 'gold');
+  maybeText(id, pick([
+    'That was nice chale. We go again soon \u{1F49B}',
+    'One picture from today don enter my status \u{1F4F8}\u{1F602}',
+    'Safe travels — text me when you reach \u{1F49B}',
+  ]), 0.5);
   if (S.friends[id] >= 80 && Math.random() < 0.5){
     const gift = ri(40, 90); earn(gift);
     setTimeout(() => toast(`${f.name} looks out`, `They insist on sending you ${cedis(gift)} for \u201Csmall support.\u201D Friends like these.`, 'good', 6000), 600);
@@ -1122,6 +1211,152 @@ function openShare(){
   });
 }
 
+/* ---------------- in-game phone ---------------- */
+let openChatId = null;
+const typing = {};
+function phoneData(){
+  S.phone = S.phone || { threads:{}, unread:{}, lastDay:{} };
+  return S.phone;
+}
+function pushText(id, who, text){
+  const p = phoneData();
+  p.threads[id] = p.threads[id] || [];
+  p.threads[id].push({ who, t:text, d:S.day, h:S.hour });
+  if (p.threads[id].length > 40) p.threads[id].splice(0, p.threads[id].length - 40);
+  if (who === 'them' && openChatId !== id) p.unread[id] = (p.unread[id] || 0) + 1;
+}
+function updatePhoneBadge(){
+  const p = phoneData();
+  const n = Object.values(p.unread).reduce((a, b) => a + b, 0);
+  const b = $('#phone-badge');
+  if (!b) return;
+  b.textContent = n > 9 ? '9+' : String(n);
+  b.classList.toggle('hidden', n === 0);
+}
+function deliverText(id, text){
+  pushText(id, 'them', text);
+  if (openChatId !== id) toast('\u{1F4AC} ' + FRIENDS[id].name, text, 'gold', 5200);
+  updatePhoneBadge(); save();
+  if (openChatId === id) renderPhoneChat(id);
+}
+function maybeText(id, text, prob){
+  if (Math.random() > (prob === undefined ? 0.4 : prob)) return;
+  deliverText(id, text);
+}
+function npcReply(id, text){
+  const t = (text || '').toLowerCase();
+  const L = FRIENDS[id].lines;
+  const has = k => L[k] && L[k].length;
+  if (/how far|^hi\b|hello|\byo\b|morning|sup\b|wey\b/.test(t) && has('hi')) return pick(L.hi);
+  if (/link|hang|visit|\bout\b|come over|where you/.test(t) && has('link')) return pick(L.link);
+  if (/waakye|food|chop|eat|hungry|jollof|banku|fish|kelewele|sobolo/.test(t) && has('food')) return pick(L.food);
+  if (/money|momo|broke|cash|\bpay\b|rent|salary/.test(t) && has('money')) return pick(L.money);
+  if (/party|club|detty|dance|drinks|tonight|turn up/.test(t) && has('party')) return pick(L.party);
+  if (/dumsor|light|\becg\b|power|dark/.test(t) && has('dumsor')) return pick(L.dumsor);
+  return pick(L.any);
+}
+function openPhone(){
+  phoneData().unread = {};
+  updatePhoneBadge();
+  renderPhoneList();
+}
+function renderPhoneList(){
+  openChatId = null;
+  const p = phoneData();
+  const rows = Object.entries(FRIENDS).map(([id, f]) => {
+    const th = p.threads[id] || [];
+    const last = th[th.length - 1];
+    const un = p.unread[id] || 0;
+    return `<button class="chat-row" data-chat="${id}">
+      <span class="chat-ava">${f.emoji}</span>
+      <span class="chat-meta"><b>${f.name}</b>
+        <span class="chat-prev">${last ? esc(last.who === 'me' ? 'You: ' + last.t : last.t) : 'Say hello, chale\u2026'}</span></span>
+      <span class="chat-side">${last ? 'D' + last.d : ''}${un ? `<span class="chat-unread">${un}</span>` : ''}</span>
+    </button>`;
+  }).join('');
+  showModal(`<div class="phone">
+    <div class="phone-top"><span>MTN 4G \u{1F4F6}</span><span>${hourLabel(S.hour)}</span><span>\u{1F50B} ${ri(60, 92)}%</span></div>
+    <div class="phone-head"><b>\u{1F4AC} Chats</b></div>
+    <div class="phone-body">${rows}</div>
+    <div class="phone-foot">texts are free here — bundles no dey finish</div>
+  </div>`);
+  document.querySelectorAll('[data-chat]').forEach(b => b.addEventListener('click', () => renderPhoneChat(b.dataset.chat)));
+}
+function renderPhoneChat(id){
+  openChatId = id;
+  const p = phoneData();
+  const f = FRIENDS[id];
+  const th = (p.threads[id] || []).slice(-30);
+  const bubbles = th.map(m => `<div class="bub ${m.who}">${esc(m.t)}<span class="bub-meta">D${m.d} \u00B7 ${hourLabel(m.h)}</span></div>`).join('');
+  const typingBub = typing[id] ? '<div class="bub them typing"><i></i><i></i><i></i></div>' : '';
+  const chips = ['How far?', 'Link up later?', 'Waakye? \u{1F35A}', 'Detty season dey come \u{1F389}', 'You dey okay?'];
+  showModal(`<div class="phone">
+    <div class="phone-top"><span>MTN 4G \u{1F4F6}</span><span>${hourLabel(S.hour)}</span><span>\u{1F50B} ${ri(60, 92)}%</span></div>
+    <div class="phone-head">
+      <button class="ph-back" id="ph-back">\u2190</button>
+      <span class="chat-ava small">${f.emoji}</span>
+      <b>${f.name}</b>
+      <button class="btn btn-gold ph-link" id="ph-link">\u{1F4CD} Link up</button>
+    </div>
+    <div class="phone-body" id="phone-body">${bubbles}${typingBub}</div>
+    <div class="chip-row">${chips.map(c => `<button class="quick-chip" data-chip="${esc(c)}">${esc(c)}</button>`).join('')}</div>
+    <div class="phone-input"><input id="ph-in" maxlength="80" placeholder="Text ${f.name}\u2026"><button class="btn btn-gold" id="ph-send">\u27A4</button></div>
+  </div>`);
+  const body = $('#phone-body'); body.scrollTop = body.scrollHeight;
+  $('#ph-back').addEventListener('click', renderPhoneList);
+  $('#ph-link').addEventListener('click', () => hangout(id));
+  const send = () => {
+    const v = ($('#ph-in').value || '').trim();
+    if (!v) return;
+    $('#ph-in').value = '';
+    sendPlayerText(id, v);
+  };
+  $('#ph-send').addEventListener('click', send);
+  $('#ph-in').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+  document.querySelectorAll('[data-chip]').forEach(b => b.addEventListener('click', () => sendPlayerText(id, b.dataset.chip)));
+  const inp = $('#ph-in'); if (inp) inp.focus();
+}
+function sendPlayerText(id, text){
+  pushText(id, 'me', text); save();
+  if (openChatId === id) renderPhoneChat(id);
+  setTimeout(() => {
+    typing[id] = true;
+    if (openChatId === id) renderPhoneChat(id);
+    setTimeout(() => {
+      typing[id] = false;
+      deliverText(id, npcReply(id, text));
+    }, ri(900, 1900));
+  }, ri(500, 1100));
+}
+function morningTexts(){
+  phoneData();
+  const sent = [];
+  const send = (id, text) => {
+    if ((S.phone.lastDay[id] || 0) === S.day) return;
+    S.phone.lastDay[id] = S.day;
+    pushText(id, 'them', text);
+    sent.push(FRIENDS[id].name);
+  };
+  if (S.rentDue && dayOfMonth() <= 2) send('kwame', pick([
+    'Rent day!! May your MoMo be strong and your landlord merciful \u{1F64F}\u{1F602}',
+    'Landlord dey come o. Hide the TV, act poor \u{1F923}',
+  ]));
+  if (isDetty()) send('abena', pick([
+    'DETTY SEASON!!! Outfit planning starts NOW \u{1F457}\u{1F525}',
+    'It\u2019s Detty Season chale. Your savings dey cry but your vibes go thank you \u{1F483}',
+  ]));
+  if (isWeekend()) send('yaw', pick([
+    'Weekend! Beach gym special — Labadi, you dey come? \u{1F3D6}\uFE0F\u{1F94A}',
+    'Saturday morning training, then waves. No excuses \u{1F4AA}\u{1F3FE}',
+  ]));
+  const f = pick(Object.keys(FRIENDS));
+  send(f, pick(FRIENDS[f].lines.hi));
+  if (sent.length){
+    updatePhoneBadge();
+    toast('\u{1F4AC} New message' + (sent.length > 1 ? 's' : ''), sent.join(', ') + ' texted you. Tap \u{1F4F1} to read.', 'gold', 5500);
+  }
+}
+
 /* ---------------- panels ---------------- */
 function openItems(){
   const rows = Object.entries(ITEMS).map(([id, it]) => `
@@ -1168,6 +1403,7 @@ function openHelp(){
     \u{26BD} Match days happen everywhere — even the Tema harbour has a derby.
     \u{1F50C} Dumsor hits at night. Power bank softens it; generator ends it.
     \u{1F465} Link up with friends to build your circle — good friends even send you support.
+    \u{1F4F1} Your phone holds real chats with your people — text them anytime, they text back in character, and they text YOU first after big moments.
     \u{1F3C6} Unlock all 25 achievements. Save happens automatically in your browser.
     \u{1F9F1} Save up and upgrade your home: chamber \u2192 self-contained \u2192 Cantonments. Better sleep, better vibes.
     \u{1F454} Work shifts to climb from Office Assistant all the way to The Boss.
@@ -1298,6 +1534,7 @@ function render(){
       <p>${esc(e.t)}</p>
     </div>`).join('') || '<p class="muted">Your story starts now…</p>';
 
+  updatePhoneBadge();
   if (window.World) World.sync();
 }
 
@@ -1339,6 +1576,7 @@ function boot(){
       S = saved;
       // backfill fields added after first release
       S.rent = S.rent || MONTH_RENT; S.decayMul = S.decayMul || 1; S.homeLevel = S.homeLevel || 0;
+      S.phone = S.phone || { threads:{}, unread:{}, lastDay:{} };
       showScreen('game'); render();
     }
   });
@@ -1363,6 +1601,7 @@ function boot(){
 
   $('#btn-lingo').addEventListener('click', () => { sfx('click'); openLingua(); });
   $('#btn-share').addEventListener('click', () => { sfx('click'); openShare(); });
+  $('#btn-phone').addEventListener('click', () => { sfx('click'); openPhone(); });
   $('#btn-friends').addEventListener('click', () => { sfx('click'); openFriends(); });
   $('#btn-items').addEventListener('click', () => { sfx('click'); openItems(); });
   $('#btn-goals').addEventListener('click', () => { sfx('click'); openGoals(); });

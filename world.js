@@ -363,25 +363,31 @@
 
   /* ---------------- loop ---------------- */
   let lastT = 0;
+  function step(dt){
+    if (!modalOpen()) movePlayer(dt);
+    updatePeds(dt); updateCars(dt); updateRain(dt);
+    // camera follows
+    const tx = clamp(player.x - viewW / 2, 0, Math.max(0, WORLD_W - viewW));
+    const ty = clamp(player.y - viewH / 2, 0, Math.max(0, WORLD_H - viewH));
+    cam.x += (tx - cam.x) * Math.min(1, dt * 6);
+    cam.y += (ty - cam.y) * Math.min(1, dt * 6);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawWorld(performance.now() / 1000);
+    // prompt pill
+    const near = nearestSpot();
+    if (near && !modalOpen()){
+      pill.classList.remove('hidden');
+      pill.textContent = (near === S.loc ? '📍 You\u2019re at ' : '📍 Enter ') + LOCS[near].short + (near === S.loc ? '' : ' — tap or press E');
+    } else pill.classList.add('hidden');
+  }
   function frame(ts){
     const dt = Math.min(0.05, (ts - lastT) / 1000 || 0.016);
     lastT = ts;
     if (gameActive() && S){
-      if (!modalOpen()) movePlayer(dt);
-      updatePeds(dt); updateCars(dt); updateRain(dt);
-      // camera follows
-      const tx = clamp(player.x - viewW / 2, 0, Math.max(0, WORLD_W - viewW));
-      const ty = clamp(player.y - viewH / 2, 0, Math.max(0, WORLD_H - viewH));
-      cam.x += (tx - cam.x) * Math.min(1, dt * 6);
-      cam.y += (ty - cam.y) * Math.min(1, dt * 6);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      drawWorld(ts / 1000);
-      // prompt pill
-      const near = nearestSpot();
-      if (near && !modalOpen()){
-        pill.classList.remove('hidden');
-        pill.textContent = (near === S.loc ? '📍 You\u2019re at ' : '📍 Enter ') + LOCS[near].short + (near === S.loc ? '' : ' — tap or press E');
-      } else pill.classList.add('hidden');
+      // canvas may have been hidden at boot — pick up its real size as soon as it shows
+      const r = canvas.getBoundingClientRect();
+      if (Math.abs(r.width - viewW) > 2 || Math.abs(r.height - viewH) > 2) resize();
+      step(dt);
     }
     requestAnimationFrame(frame);
   }
@@ -394,6 +400,11 @@
     cam.y = clamp(player.y - viewH / 2, 0, Math.max(0, WORLD_H - viewH));
   } else placeAt(S ? S.loc : 'home');
   requestAnimationFrame(frame);
-  // expose the two hooks game.js calls
-  window.World = { placeAt, sync };
+  // expose the hooks game.js calls (sync/placeAt) and a manual step for
+  // environments that suspend requestAnimationFrame (e.g. background tabs)
+  window.World = { placeAt, sync, step: () => { if (gameActive() && S){
+    const r = canvas.getBoundingClientRect();
+    if (Math.abs(r.width - viewW) > 2 || Math.abs(r.height - viewH) > 2) resize();
+    step(0.016);
+  } } };
 })();
