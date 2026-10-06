@@ -57,6 +57,7 @@
   let rainDrops = [];
   const player = { x: 0, y: 0, tx: null, ty: null, moving: false, facing: 1, phase: 0 };
   const keys = new Set();
+  const chatBubbles = []; // live Town Square messages floating over the streets
 
   const skinColor = () => {
     const i = SKINS.indexOf(S.skin);
@@ -235,6 +236,7 @@
     // ground
     ctx.fillStyle = '#20301f'; ctx.fillRect(0, 0, viewW, viewH);
     ctx.save(); ctx.translate(-cam.x, -cam.y);
+    ctx.textAlign = 'left';
     // grass patches
     ctx.fillStyle = '#2a4028';
     for (const g of GRASS){ roundRect(g.x, g.y, g.w, g.h, 24); ctx.fill(); }
@@ -323,6 +325,8 @@
     }
     // player
     drawPlayer(t);
+    // Town Square chat bubbles floating over the streets
+    drawChatBubbles(performance.now());
     ctx.restore();
     // weather + light overlays (screen space)
     const h = S.hour;
@@ -359,6 +363,56 @@
     // name tag
     ctx.fillStyle = 'rgba(255,248,231,.9)'; ctx.font = '700 10px Inter, Arial'; ctx.textAlign = 'center';
     ctx.fillText(S.name, px, py - 22);
+  }
+
+  /* ---------------- Town Square bubbles ---------------- */
+  function wrapText(text, max){
+    const words = String(text).split(/\s+/);
+    const lines = [];
+    let cur = '';
+    for (const w of words){
+      if ((cur + ' ' + w).trim().length > max){ if (cur) lines.push(cur.trim()); cur = w; }
+      else cur = (cur + ' ' + w).trim();
+    }
+    if (cur) lines.push(cur);
+    return lines.length ? lines : [''];
+  }
+  function chatFeed(p){
+    try {
+      const text = String(p.m || '').slice(0, 60);
+      if (!text) return;
+      const mine = typeof S !== 'undefined' && S && S.handle &&
+        String(p.h || '').toLowerCase() === String(S.handle).toLowerCase();
+      const b = { h: String(p.h || '').slice(0, 16), m: text, until: performance.now() + 9000 };
+      if (mine) b.followPlayer = true;
+      else if (peds.length) b.ped = peds[Math.floor(Math.random() * peds.length)];
+      else return;
+      chatBubbles.push(b);
+      while (chatBubbles.length > 3) chatBubbles.shift();
+    } catch(e){}
+  }
+  function drawChatBubbles(nowMs){
+    for (let i = chatBubbles.length - 1; i >= 0; i--){
+      const b = chatBubbles[i];
+      if (nowMs > b.until){ chatBubbles.splice(i, 1); continue; }
+      const anchor = b.ped || player;
+      const bx = anchor.x, by = anchor.y - (b.ped ? 24 : 34);
+      ctx.font = '700 9px Inter, Arial';
+      const lines = wrapText(b.m, 17).slice(0, 2);
+      const w = Math.max(52, ...lines.map(l => ctx.measureText('@' + b.h + '  ' + l).width)) + 12;
+      const h = 16 + lines.length * 10;
+      ctx.globalAlpha = Math.min(1, (b.until - nowMs) / 800);
+      ctx.fillStyle = 'rgba(255,248,231,.95)';
+      roundRect(bx - w / 2, by - h, w, h, 6); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(bx - 3, by); ctx.lineTo(bx + 3, by); ctx.lineTo(bx, by + 5); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#8a6d1c';
+      ctx.font = '700 8.5px Inter, Arial';
+      ctx.fillText('@' + b.h, bx - w / 2 + 6, by - h + 10);
+      ctx.fillStyle = '#10160f';
+      ctx.font = '9px Inter, Arial';
+      lines.forEach((l, li) => ctx.fillText(l, bx - w / 2 + 6, by - h + 21 + li * 10));
+      ctx.globalAlpha = 1;
+    }
   }
 
   /* ---------------- loop ---------------- */
@@ -400,11 +454,17 @@
     cam.y = clamp(player.y - viewH / 2, 0, Math.max(0, WORLD_H - viewH));
   } else placeAt(S ? S.loc : 'home');
   requestAnimationFrame(frame);
-  // expose the hooks game.js calls (sync/placeAt) and a manual step for
-  // environments that suspend requestAnimationFrame (e.g. background tabs)
-  window.World = { placeAt, sync, step: () => { if (gameActive() && S){
-    const r = canvas.getBoundingClientRect();
-    if (Math.abs(r.width - viewW) > 2 || Math.abs(r.height - viewH) > 2) resize();
-    step(0.016);
-  } } };
+  // expose the hooks game.js calls (sync/placeAt), a manual step for
+  // environments that suspend requestAnimationFrame (e.g. background tabs),
+  // and the chat-bubble feed from the Town Square
+  window.World = {
+    placeAt, sync,
+    step: () => { if (gameActive() && S){
+      const r = canvas.getBoundingClientRect();
+      if (Math.abs(r.width - viewW) > 2 || Math.abs(r.height - viewH) > 2) resize();
+      step(0.016);
+    } },
+    chatFeed,
+    state: () => ({ bubbles: chatBubbles.length, peds: peds.length }),
+  };
 })();

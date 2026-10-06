@@ -14,8 +14,25 @@
   const HISTORY_LIMIT = 80;
   const RECENT_MS = 3 * 60 * 1000;
   const PICKS = ['\u{1F602}', '\u{1F525}', '\u2764\uFE0F', '\u{1F44D}', '\u{1F480}', '\u{1F1EC}\u{1F1ED}'];
+  const ROOMS = [
+    { id: 'global', name: '\u{1F30D} Global' },
+    { id: 'hustle', name: '\u{1F4BC} Hustlers\u2019 Corner' },
+    { id: 'osu',    name: '\u{1F3A7} Osu Nightlife' },
+    { id: 'ball',   name: '\u26BD Football' },
+  ];
+  const roomTopic = id => (id === 'global' ? GLOBAL_TOPIC : `accra-life-room-${id}-9k2mf`);
   const config = window.ACCRA_CONFIG || {};
   const wantSupabase = !!(config.supabaseURL && config.supabaseAnonKey);
+
+  // light profanity mask — applied when sending and when rendering
+  const NAUGHTY = ['fuck', 'motherfucker', 'shit', 'bitch', 'bastard', 'asshole', 'dickhead', 'dick', 'cunt', 'pussy', 'whore', 'slut', 'gbonyo', 'muumu'];
+  function scrub(s){
+    let out = String(s || '');
+    for (const w of NAUGHTY){
+      out = out.replace(new RegExp('\\b' + w + '\\b', 'gi'), m => m[0] + '*'.repeat(Math.max(1, m.length - 1)));
+    }
+    return out;
+  }
 
   let me = null;
   let sb = null, sbReady = false, sbBooted = false;
@@ -27,7 +44,8 @@
   try { blocked = new Set(JSON.parse(localStorage.getItem('accraLifeBlocked') || '[]')); } catch(e){}
   const saveBlocked = () => { try { localStorage.setItem('accraLifeBlocked', JSON.stringify([...blocked])); } catch(e){} };
 
-  let activeTab = 'global';
+  let activeTab = 'room';
+  let activeRoom = 'global';
   let activeDM = null;
   let lastSent = 0;
   let modalIsOpen = false;
@@ -149,6 +167,9 @@
     c.msgs.push(p);
     if (c.msgs.length > HISTORY_LIMIT) c.msgs.shift();
     handleEvent(p);
+    if (p.t === 'msg' && window.World && World.chatFeed){
+      World.chatFeed({ h: p.h, m: scrub(p.m) });
+    }
     renderIfCurrent(topicOf(c), p);
   }
   function topicOf(c){
@@ -156,7 +177,7 @@
     return null;
   }
   function currentTopic(){
-    if (activeTab === 'global') return GLOBAL_TOPIC;
+    if (activeTab === 'room') return roomTopic(activeRoom);
     return activeDM ? (dmTopics[activeDM.toLowerCase()] || null) : null;
   }
   function renderIfCurrent(topic, newMsg){
@@ -337,7 +358,7 @@
     const chips = chipsHTML(m.id);
     return `<div class="chat-msg ${mine ? 'own' : ''}" data-mid="${escLocal(m.id)}">
       <span class="cm-handle" data-handle="${escLocal(m.h)}" title="Tap to block/unblock">@${escLocal(m.h)}</span>
-      <p>${escLocal(String(m.m || '').slice(0, 200))}</p>
+      <p>${escLocal(scrub(String(m.m || '').slice(0, 200)))}</p>
       <span class="cm-time">${escLocal(time)}</span>
       ${chips ? `<div class="chat-reacts">${chips}</div>` : ''}
       <div class="react-pick hidden" data-pick="${escLocal(m.id)}">${PICKS.map(e => `<button class="react-pick-btn" data-mid="${escLocal(m.id)}" data-e="${e}">${e}</button>`).join('')}</div>
@@ -380,9 +401,10 @@
       ? '<p class="chat-note">🚫 Blocked (tap to unblock): ' + [...blocked].map(h =>
           `<button class="chat-tab" data-unblock="${escLocal(h)}" style="display:inline-block;padding:2px 8px">@${escLocal(h)}</button>`).join(' ') + '</p>'
       : '';
+    const roomName = (ROOMS.find(r => r.id === activeRoom) || ROOMS[0]).name;
     showModal(`<h3>💬 Town Square</h3>
       <div class="chat-tabs">
-        <button class="chat-tab ${activeTab === 'global' ? 'sel' : ''}" data-tab="global">🌍 Global</button>
+        ${ROOMS.map(r => `<button class="chat-tab ${activeTab === 'room' && activeRoom === r.id ? 'sel' : ''}" data-room="${r.id}">${r.name}</button>`).join('')}
         <button class="chat-tab ${activeTab === 'dm' ? 'sel' : ''}" data-tab="dm">✉️ DM${activeDM ? ': @' + escLocal(activeDM) : ''}</button>
       </div>
       ${activeTab === 'dm' && !activeDM ? `
@@ -394,14 +416,20 @@
         <div id="presence-row" class="chat-presence"></div>
         <div class="chat-msgs" id="chat-msgs">${list}</div>
         <div class="chat-inputrow">
-          <input id="chat-inp" maxlength="160" placeholder="${activeTab === 'global' ? 'Talk to the square… (tap a message to react, tap a name to block)' : 'Message @' + escLocal(activeDM || '') + '…'}" autocomplete="off">
+          <input id="chat-inp" maxlength="160" placeholder="${activeTab === 'room' ? roomName + '… (tap a message to react, tap a name to block)' : 'Message @' + escLocal(activeDM || '') + '…'}" autocomplete="off">
           <button id="btn-chat-send" class="btn btn-gold">Send</button>
         </div>
       `}
-      <p class="chat-note">🌍 Public square — be cool, no personal info. Messages fade after ~12h.${me ? ' You are <b>@' + escLocal(me) + '</b>' : ''}</p>
+      <p class="chat-note">🌍 Public square — be cool, no personal info, keep it clean (naughty words get masked). Messages fade after ~12h.${me ? ' You are <b>@' + escLocal(me) + '</b>' : ''}</p>
       ${blockedList}
       ${modalButtons([{ label:'Close', fn: closeModalChat }])}`);
     bindModalButtons([{ label:'Close', fn: closeModalChat }]);
+    document.querySelectorAll('[data-room]').forEach(b => b.addEventListener('click', () => {
+      sfx('click');
+      activeTab = 'room'; activeRoom = b.dataset.room;
+      conn(roomTopic(activeRoom));
+      renderChat();
+    }));
     document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => {
       sfx('click');
       activeTab = b.dataset.tab;
@@ -450,11 +478,11 @@
   }
   function sendCurrent(){
     const inp = $('#chat-inp');
-    const text = String(inp.value || '').trim().slice(0, 160);
+    const text = scrub(String(inp.value || '').trim().slice(0, 160));
     if (!text) return;
     let ok;
-    if (activeTab === 'global'){
-      ok = send(GLOBAL_TOPIC, { t: 'msg', h: me, m: text });
+    if (activeTab === 'room'){
+      ok = send(roomTopic(activeRoom), { t: 'msg', h: me, m: text });
     } else {
       const topic = activeDM ? dmTopics[activeDM.toLowerCase()] : null;
       if (!topic) return;
@@ -464,5 +492,11 @@
     else toast('Easy chale', 'Give it a second between messages.', '');
   }
 
-  window.Chat = { open, init, setHandle, validHandle, cleanHandle };
+  window.Chat = {
+    open, init, setHandle, validHandle, cleanHandle, scrub,
+    recentGlobal: () => {
+      const c = conns[GLOBAL_TOPIC];
+      return c ? c.msgs.filter(m => m.t === 'msg').slice(-3) : [];
+    },
+  };
 })();
