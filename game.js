@@ -598,7 +598,9 @@ const ACHS = [
 ];
 
 /* ---------------- state ---------------- */
-const SAVE_KEY = 'accraLifeSaveV1';
+const OLD_KEY = 'accraLifeSaveV1';
+const slotKey = n => 'accraLifeSlot' + n;
+let slot = 1;
 let soundOn = true;
 try { soundOn = localStorage.getItem('accraLifeSound') !== '0'; } catch(e){}
 let S = null;
@@ -616,6 +618,7 @@ function freshState(name, skinEmoji, fit, hustleId, diffId){
     friends:{ kwame:15, abena:15, kofi:15, efua:15, yaw:15 },
     rentDue:false, rentLateDays:0, startedMonth:1, snapEarned:0, plant:false,
     phone:{ threads:{}, unread:{}, lastDay:{} },
+    customEvents:[],
     counters:{ waakye:0, parties:0, dumsor:0, beach:0, shifts:0, hangs:0, jollof:0, gym:0, rentPaid:0, earned:0, spent:0, dettyParties:0, tema:0, aburi:0 },
     ach:{}, log:[],
   };
@@ -623,9 +626,9 @@ function freshState(name, skinEmoji, fit, hustleId, diffId){
   s.money = Math.round(s.money * d.money);
   return s;
 }
-function save(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch(e){} }
-function loadSave(){ try { const r = localStorage.getItem(SAVE_KEY); return r ? JSON.parse(r) : null; } catch(e){ return null; } }
-function clearSave(){ try { localStorage.removeItem(SAVE_KEY); } catch(e){} }
+function save(){ try { localStorage.setItem(slotKey(slot), JSON.stringify(S)); } catch(e){} }
+function loadSlot(n){ try { const r = localStorage.getItem(slotKey(n)); return r ? JSON.parse(r) : null; } catch(e){ return null; } }
+function clearSlot(n){ try { localStorage.removeItem(slotKey(n)); } catch(e){} }
 
 const monthOf = () => Math.floor((S.day - 1) / DAYS_PER_MONTH) + 1;
 const dayOfMonth = () => ((S.day - 1) % DAYS_PER_MONTH) + 1;

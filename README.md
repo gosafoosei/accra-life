@@ -37,7 +37,7 @@ Progress auto-saves to your browser's localStorage.
 | **Economy** | Shifts at an Airport City job (raises every 10 shifts), market hustles, remote gigs (needs a laptop), rent of GH₵ 800 due on the 1st of every month |
 | **Items** | Power bank, "I-better-pass-my-neighbour" generator, laptop, Black Stars jersey |
 | **5 friends** | Kwame, Abena, Kofi, Efua and Yaw — link up to build relationships; close friends send support |
-| **💬 Town Square chat** | Every player picks a required username and can chat with other real players — a global square plus direct messages by username (with typing, mentions and DM pings). Runs over the free ntfy.sh pub/sub service: public, unencrypted, message history fades after ~12 hours. For real accounts/persistence, swap in Supabase later |
+| **💬 Town Square chat** | Every player picks a required username and can chat with other real players — a global square plus direct messages by username, with live presence, emoji reactions, mentions and blocking. Default transport is the free ntfy.sh pub/sub (public, unencrypted, history fades after ~12h). For your own backend, run `supabase-setup.sql` on any Supabase project and paste the URL + anon key into `config.js` — the chat switches transports automatically |
 | **25 achievements** | From *Akwaaba!* and *Waakye Ambassador* to *Soft Life Living*, *The Boss* and *MoMo Magnate* |
 | **🏠 Home upgrades** | Chamber & hall → self-contained (GH₵ 4,000) → Cantonments apartment (GH₵ 12,000). Better sleep, better morning vibes, two achievements |
 | **👔 Career ladder** | Office Assistant → Junior Executive → Senior Executive → Manager → The Boss — a raise every 10 shifts |
