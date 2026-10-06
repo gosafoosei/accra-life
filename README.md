@@ -6,6 +6,8 @@ concept behind lagoslife.app, rebuilt from scratch with Ghanaian flavour and an 
 > Ride trotro, chop waakye at Tudu, party on Oxford Street, survive dumsor — and build your own
 > Accra dream, one decision at a time.
 
+**🎮 Play live: [gosafoosei.github.io/accra-life](https://gosafoosei.github.io/accra-life/)**
+
 ## Play it
 
 No build step, no dependencies. Either:
