@@ -34,6 +34,12 @@ const HUSTLES = [
   { id:'hustler', name:'\u{1F6F5} The Hustler', desc:'Start with GH\u20B5 200 but everyone knows you (+15 starting links, side gigs pay better).', apply(S){ S.money = 200; S.lk += 15; S.hustler = true; } },
 ];
 
+const DIFFS = [
+  { id:'soft',     name:'\u{1F9D8}\u{1F3FE} Soft Life', desc:'Start with 1.5\u00D7 money, rent GH\u20B5 650, gentler daily drain. Accra on easy mode.', money:1.5, rent:650,  decay:0.8,  wage:1 },
+  { id:'standard', name:'\u2696\uFE0F Accra Standard', desc:'The real Accra. GH\u20B5 800 rent, honest drain, honest hustle.', money:1,   rent:800,  decay:1,    wage:1 },
+  { id:'hard',     name:'\u{1F525} Hustle Hard', desc:'Start with 0.6\u00D7 money, rent GH\u20B5 1,000, everything drains faster, wages 10% leaner. For veterans.', money:0.6, rent:1000, decay:1.25, wage:0.9 },
+];
+
 const ITEMS = {
   powerbank: { emoji:'\u{1F50B}', name:'Power bank', price:250,  desc:'Keeps your phone alive when ECG strikes.' },
   generator: { emoji:'\u{1F50C}', name:'I-better-pass-my-neighbour generator', price:3500, desc:'Dumsor becomes somebody else\u2019s problem. Loud, but worth it.' },
@@ -79,7 +85,7 @@ const PHRASES = [
 const LOCS = {
   home: {
     name:'Home, East Legon', short:'East Legon', emoji:'\u{1F3E0}', g1:'#1b4332', g2:'#0e2119',
-    blurb:'Your chamber-and-hall with a view of somebody\u2019s generator. Rent: GH\u20B5 800 a month.',
+    blurb:'Your chamber-and-hall with a view of somebody\u2019s generator. The landlord comes knocking on the 1st.',
     flavor:[
       'You water the plant you swore you\u2019d keep alive. It is thriving. Unlike your budget.',
       'The fan whirs overhead like it\u2019s also tired.',
@@ -98,7 +104,7 @@ const LOCS = {
           'You water your plant and tell it about your day. It thrives out of pure respect.',
           'A new leaf has opened. You are officially a plant person now.',
         ] },
-      { id:'payrent', label:'Pay rent', icon:'\u{1F3E0}\u{1F4B8}', cost:MONTH_RENT, eff:{mo:-MONTH_RENT, vb:14}, showIf:()=>S.rentDue, desc:'Silence the landlord. +14 vibes.', special:'payrent' },
+      { id:'payrent', label:'Pay rent', icon:'\u{1F3E0}\u{1F4B8}', costFn:()=>S.rent, special:'payrent', showIf:()=>S.rentDue, desc:'Silence the landlord. +14 vibes.' },
     ],
   },
   makola: {
@@ -438,6 +444,26 @@ const EVENTS = [
         }},
       ],
   }},
+  { id:'derby', w:4, when:'day', cond:()=>S.loc === 'tema', choice:{
+      title:'\u26BD Harbour derby day',
+      body:'It\u2019s match day in Tema and the whole harbour city is electric. The viewing centre by the docks is charging GH\u20B5 30 at the door — the banter is free.',
+      options:[
+        { label:'Pull up (GH\u20B5 30, +3h)', run(){
+            S.money = Math.max(0, S.money - 30);
+            S.lk = clamp(S.lk + 9, 0, 100); S.vb = clamp(S.vb + 14, 0, 100);
+            S.en = clamp(S.en - 8, 0, 100); S.fd = clamp(S.fd + 10, 0, 100);
+            S.hour = Math.min(24, S.hour + 3);
+            if (Math.random() < 0.5){
+              S.vb = clamp(S.vb + 6, 0, 100);
+              return 'Ninety minutes, three near-fights, one beautiful goal. Your side wins and the harbour hears about it for a week.';
+            }
+            return 'Your side loses to a dubious last-minute penalty. You argue about it for two extra hours — which, in Ghana, is the real national sport.';
+        }},
+        { label:'Give it a miss', run(){
+            return 'You skip the derby. The roars from the viewing centre follow you around the harbour all afternoon, like a conscience with a drum.';
+        }},
+      ],
+  }},
   { id:'broke', w:2, when:'day', run(){
       if (S.money > 60) return null;
       S.fd = clamp(S.fd + 35, 0, 100); S.vb = clamp(S.vb + 10, 0, 100);
@@ -476,13 +502,15 @@ const SAVE_KEY = 'accraLifeSaveV1';
 let soundOn = true;
 try { soundOn = localStorage.getItem('accraLifeSound') !== '0'; } catch(e){}
 let S = null;
-let createChoice = { skin:0, fit:0, hustle:0 };
+let createChoice = { skin:0, fit:0, hustle:0, diff:1 };
 
-function freshState(name, skinEmoji, fit, hustleId){
+function freshState(name, skinEmoji, fit, hustleId, diffId){
+  const d = DIFFS.find(x => x.id === diffId) || DIFFS[1];
   const s = {
-    v:1, name, skin:skinEmoji, fit:fit.id,
+    v:1, name, skin:skinEmoji, fit:fit.id, diff:d.id,
     day:1, hour:7, loc:'home',
-    money:200, wage:130, en:90, fd:70, vb:65, lk:40, sm:10,
+    money:200, wage:Math.round(130 * d.wage), en:90, fd:70, vb:65, lk:40, sm:10,
+    rent:d.rent, decayMul:d.decay,
     groceries:false, hustler:false,
     items:{ powerbank:false, generator:false, laptop:false, jersey:false },
     friends:{ kwame:15, abena:15, kofi:15, efua:15, yaw:15 },
@@ -491,6 +519,7 @@ function freshState(name, skinEmoji, fit, hustleId){
     ach:{}, log:[],
   };
   const h = HUSTLES.find(x => x.id === hustleId); if (h) h.apply(s);
+  s.money = Math.round(s.money * d.money);
   return s;
 }
 function save(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch(e){} }
@@ -574,11 +603,12 @@ function showScreen(id){
 
 /* ---------------- time engine ---------------- */
 function advanceHours(hrs){
+  const dm = S.decayMul || 1;
   for (let i = 0; i < hrs; i++){
     // awake-time decay
-    S.en = clamp(S.en - 1, 0, 100);
-    S.fd = clamp(S.fd - 1.6, 0, 100);
-    if (S.fd <= 0) S.vb = clamp(S.vb - 1.5, 0, 100);
+    S.en = clamp(S.en - 1 * dm, 0, 100);
+    S.fd = clamp(S.fd - 1.6 * dm, 0, 100);
+    if (S.fd <= 0) S.vb = clamp(S.vb - 1.5 * dm, 0, 100);
     S.hour += 1;
     if (S.hour >= 24){ crashToSleep(); return; }
   }
@@ -609,8 +639,8 @@ function newDayRoll(){
   // rent cycle
   if (dayOfMonth() === 1 && monthOf() > S.startedMonth){
     S.rentDue = true; S.rentLateDays = 0;
-    toast('\u{1F3E0} Month ' + monthOf(), 'Rent day! GH\u20B5 800 due. Your landlord\u2019s patience is renewable but not unlimited.', 'bad', 6000);
-    logMsg(`Month ${monthOf()} begins. Rent of GH\u20B5 800 is due.`, 'bad');
+    toast('\u{1F3E0} Month ' + monthOf(), `Rent day! ${cedis(S.rent)} due. Your landlord\u2019s patience is renewable but not unlimited.`, 'bad', 6000);
+    logMsg(`Month ${monthOf()} begins. Rent of ${cedis(S.rent)} is due.`, 'bad');
   }
   if (S.rentDue && dayOfMonth() > 1) S.rentLateDays = dayOfMonth() - 1;
   if (S.rentDue && S.rentLateDays >= 10){ save(); gameOver(); return; }
@@ -630,7 +660,7 @@ function newDayRoll(){
   save(); checkAchievements(); render();
 }
 function maybeEvent(when){
-  const pool = EVENTS.filter(e => !when || e.when === when);
+  const pool = EVENTS.filter(e => (!when || e.when === when) && (!e.cond || e.cond()));
   if (!pool.length) return null;
   const total = pool.reduce((a, e) => a + e.w, 0);
   let r = Math.random() * total;
@@ -668,7 +698,7 @@ function doAction(locId, act){
   if (act.minHour !== undefined && S.hour < act.minHour){ toast('Too early', act.minHourMsg, 'bad'); return; }
   if (act.need === 'groceries' && !S.groceries){ toast('Kettle dey empty', act.needMsg, 'bad'); return; }
   if (act.need === 'laptop' && !S.items.laptop){ toast('No laptop', act.needMsg, 'bad'); return; }
-  const cost = act.cost || 0;
+  const cost = act.costFn ? act.costFn() : (act.cost || 0);
   if (cost > S.money){ toast('Money no dey', `You need ${cedis(cost)} for that, chale.`, 'bad'); return; }
   const eff = act.eff || {};
   const enCost = -(eff.en || 0);
@@ -709,11 +739,11 @@ function handleSpecial(locId, act){
       toast('Day ' + S.day, 'Akwaaba to a new day. The city resets, and so do you.', 'good');
       break;
     case 'payrent':
-      spend(MONTH_RENT);
+      spend(S.rent);
       S.rentDue = false; S.rentLateDays = 0; S.counters.rentPaid++;
       S.vb = clamp(S.vb + 14, 0, 100);
-      logMsg('You pay the rent. Your landlord smiles the smile of a man whose children are in private school.', 'gold');
-      toast('Rent paid', 'GH\u20B5 800 gone, but peace of mind restored. +14 vibes.', 'good');
+      logMsg(`You pay the rent. Your landlord smiles the smile of a man whose children are in private school.`, 'gold');
+      toast('Rent paid', `${cedis(S.rent)} gone, but peace of mind restored. +14 vibes.`, 'good');
       break;
     case 'groceries':
       spend(act.cost); S.groceries = true; advanceHours(act.hrs);
@@ -911,19 +941,31 @@ function fallbackCopy(text, done){
   catch(e){ toast('Hmm', 'Your browser blocked the clipboard. Screenshot the card instead, chale.', 'bad'); }
   ta.remove();
 }
-function openShare(){
-  const c = document.createElement('canvas'); c.width = 1000; c.height = 1000;
+function loadQR(){
+  return new Promise(resolve => {
+    if (window.qrcode) return resolve(true);
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js';
+    s.onload = () => resolve(!!window.qrcode);
+    s.onerror = () => resolve(false);
+    document.head.appendChild(s);
+    setTimeout(() => resolve(!!window.qrcode), 4000);
+  });
+}
+function drawShareCard(withQR){
+  const W = 1000, H = 1200;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
   const x = c.getContext('2d');
-  const bg = x.createLinearGradient(0, 0, 1000, 1000);
+  const bg = x.createLinearGradient(0, 0, W, H);
   bg.addColorStop(0, '#173427'); bg.addColorStop(1, '#0b110d');
-  x.fillStyle = bg; x.fillRect(0, 0, 1000, 1000);
+  x.fillStyle = bg; x.fillRect(0, 0, W, H);
   const glow = x.createRadialGradient(500, 170, 60, 500, 170, 520);
   glow.addColorStop(0, 'rgba(242,201,76,.16)'); glow.addColorStop(1, 'rgba(242,201,76,0)');
-  x.fillStyle = glow; x.fillRect(0, 0, 1000, 1000);
+  x.fillStyle = glow; x.fillRect(0, 0, W, H);
   // kente bands
   const cols = ['#f2c94c', '#006b3f', '#e0463f', '#1a1409'];
   const widths = [74, 48, 38, 62];
-  [60, 912].forEach(y => {
+  [60, 1112].forEach(y => {
     let px = 70;
     while (px < 930){
       for (let i = 0; i < 4 && px < 930; i++){ x.fillStyle = cols[i]; x.fillRect(px, y, widths[i], 28); px += widths[i] + 8; }
@@ -952,13 +994,37 @@ function openShare(){
     x.fillText(v, 830, y);
     y += 66;
   });
-  x.textAlign = 'center'; x.fillStyle = '#f2c94c'; x.font = '700 34px Inter, Arial, sans-serif';
-  x.fillText('\u25B6 play free \u00B7 gosafoosei.github.io/accra-life', 500, 876);
-  const img = c.toDataURL('image/png');
+  let qrDrawn = false;
+  if (withQR && window.qrcode){
+    try{
+      const qr = window.qrcode(0, 'M');
+      qr.addData('https://gosafoosei.github.io/accra-life/');
+      qr.make();
+      const n = qr.getModuleCount(), size = 210, ox = (W - size) / 2, oy = 838;
+      const cell = size / n;
+      x.fillStyle = '#fff8e7'; x.fillRect(ox - 16, oy - 16, size + 32, size + 32);
+      x.fillStyle = '#0c120e';
+      for (let r = 0; r < n; r++) for (let cc = 0; cc < n; cc++){
+        if (qr.isDark(r, cc)) x.fillRect(ox + cc * cell, oy + r * cell, Math.ceil(cell), Math.ceil(cell));
+      }
+      x.textAlign = 'center'; x.fillStyle = '#a8b3a3'; x.font = '500 30px Inter, Arial, sans-serif';
+      x.fillText('scan to play \u00B7 free in your browser', 500, oy + size + 52);
+      qrDrawn = true;
+    }catch(e){ qrDrawn = false; }
+  }
+  if (!qrDrawn){
+    x.textAlign = 'center'; x.fillStyle = '#f2c94c'; x.font = '700 36px Inter, Arial, sans-serif';
+    x.fillText('\u25B6 play free \u00B7 gosafoosei.github.io/accra-life', 500, 950);
+  }
+  return c;
+}
+function openShare(){
+  let canvas = drawShareCard(false);
+  const img = canvas.toDataURL('image/png');
   const storyText = `\u{1F30D} Day ${S.day} of my Accra story — earned ${cedis(S.counters.earned)}, ate ${S.counters.waakye} plates of waakye, survived ${S.counters.dumsor} dumsor nights, ${Object.keys(S.ach).length}/${ACHS.length} achievements. Chale, come and play: https://gosafoosei.github.io/accra-life/`;
   const btns = [
     { label:'\u2B07\uFE0F Download card', cls:'btn-gold', fn(){
-        const a = document.createElement('a'); a.href = img; a.download = 'accra-life-story.png'; a.click();
+        const a = document.createElement('a'); a.href = canvas.toDataURL('image/png'); a.download = 'accra-life-story.png'; a.click();
         toast('Card saved', 'Check your downloads, chale.', 'good');
     }},
     { label:'\u{1F4CB} Copy my story text', fn(){
@@ -970,9 +1036,16 @@ function openShare(){
   ];
   showModal(`<h3>\u{1F4E4} Your Accra story, ready to flex</h3>
     <p class="m-body">A share card of your run — for the group chat, the timeline, and your future self.</p>
-    <img class="share-img" src="${img}" alt="Your Accra Life story card">
+    <img id="share-img" class="share-img" src="${img}" alt="Your Accra Life story card">
     ${modalButtons(btns)}`);
   bindModalButtons(btns);
+  // progressive enhancement: add the QR once the tiny generator loads
+  loadQR().then(ok => {
+    if (!ok) return;
+    canvas = drawShareCard(true);
+    const el = document.getElementById('share-img');
+    if (el) el.src = canvas.toDataURL('image/png');
+  });
 }
 
 /* ---------------- panels ---------------- */
@@ -1016,7 +1089,8 @@ function openHelp(){
     \u{1F690} Travel between neighbourhoods by trotro, keke, Bolt or leg-power.
     \u{1F4BC} Work shifts at Airport City (weekdays only) to earn. Every 10 shifts = a raise.
     \u{1F35A} Eat before your food bar empties, or your vibes will suffer.
-    \u{1F3E0} Rent of GH\u20B5 800 is due on the 1st of every month. Miss it too long and the story ends.
+    \u{1F3E0} Rent is due on the 1st of every month — how much depends on the difficulty you picked (GH\u20B5 650 / 800 / 1,000). Miss it too long and the story ends.
+    \u{26BD} Match days happen everywhere — even the Tema harbour has a derby.
     \u{1F50C} Dumsor hits at night. Power bank softens it; generator ends it.
     \u{1F465} Link up with friends to build your circle — good friends even send you support.
     \u{1F3C6} Unlock all 22 achievements. Save happens automatically in your browser.
@@ -1096,7 +1170,7 @@ function render(){
   // scene
   const loc = LOCS[S.loc];
   const actions = loc.actions.filter(a => !a.showIf || a.showIf()).map(a => {
-    const cost = a.cost || 0;
+    const cost = a.costFn ? a.costFn() : (a.cost || 0);
     const eff = a.eff || {};
     const enCost = -(eff.en || 0);
     let disabled = false, warn = '';
@@ -1155,15 +1229,20 @@ function renderCreate(){
     <button class="hustle-card ${createChoice.hustle === i ? 'sel' : ''}" data-hustle="${i}">
       <h4>${h.name}</h4><p>${h.desc}</p>
     </button>`).join('');
+  $('#diff-cards').innerHTML = DIFFS.map((d, i) => `
+    <button class="hustle-card ${createChoice.diff === i ? 'sel' : ''}" data-diff="${i}">
+      <h4>${d.name}</h4><p>${d.desc}</p>
+    </button>`).join('');
   document.querySelectorAll('[data-skin]').forEach(b => b.addEventListener('click', () => { createChoice.skin = +b.dataset.skin; renderCreate(); }));
   document.querySelectorAll('[data-fit]').forEach(b => b.addEventListener('click', () => { createChoice.fit = +b.dataset.fit; renderCreate(); }));
   document.querySelectorAll('[data-hustle]').forEach(b => b.addEventListener('click', () => { createChoice.hustle = +b.dataset.hustle; renderCreate(); }));
+  document.querySelectorAll('[data-diff]').forEach(b => b.addEventListener('click', () => { createChoice.diff = +b.dataset.diff; renderCreate(); }));
 }
 
 /* ---------------- boot ---------------- */
 function beginGame(name){
   const fit = FITS[createChoice.fit];
-  S = freshState(name, SKINS[createChoice.skin], fit, HUSTLES[createChoice.hustle].id);
+  S = freshState(name, SKINS[createChoice.skin], fit, HUSTLES[createChoice.hustle].id, DIFFS[createChoice.diff].id);
   logMsg(`You arrive in Accra with ${cedis(S.money)}, one bag of ambition and zero contacts. Akwaaba, ${S.name}. The city clock starts now.`, 'gold');
   toast('Akwaaba, ' + S.name + '!', 'Day 1 in Accra. Make it count, chale.', 'good', 6000);
   setTimeout(() => toast('\u{1F4A1} Small tip, chale', 'Tap a neighbourhood below to travel. Waakye fixes hunger. The office pays the bills. Sleep restores everything.', '', 8000), 1600);
@@ -1175,7 +1254,12 @@ function boot(){
   $('#btn-new').addEventListener('click', () => { sfx('click'); showScreen('create'); renderCreate(); $('#inp-name').focus(); });
   $('#btn-continue').addEventListener('click', () => {
     const saved = loadSave();
-    if (saved){ S = saved; showScreen('game'); render(); }
+    if (saved){
+      S = saved;
+      // backfill fields added after first release
+      S.rent = S.rent || MONTH_RENT; S.decayMul = S.decayMul || 1;
+      showScreen('game'); render();
+    }
   });
   const saved = loadSave();
   if (saved && saved.name) $('#btn-continue').classList.remove('hidden');
