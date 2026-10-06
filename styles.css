@@ -327,6 +327,38 @@ button{font-family:inherit}
 }
 @keyframes pillIn{from{transform:translateX(-50%) translateY(8px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
 
+/* ---------- save slots ---------- */
+.slot-wrap{max-width:560px;margin:0 auto 30px}
+.slot-label{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;margin:0 0 10px;text-align:center}
+.slot-list{display:grid;gap:9px}
+.slot-card{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;
+  padding:12px 14px;cursor:pointer;color:var(--ink);font-family:inherit;font-size:14px;
+  transition:transform .12s ease, border-color .12s ease;position:relative;
+}
+.slot-card:hover{transform:translateY(-2px);border-color:var(--gold)}
+.slot-card.empty{justify-content:center;color:var(--muted)}
+.slot-card .s-num{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-width:44px}
+.slot-card .s-name{font-weight:700;color:var(--cream)}
+.slot-card .s-info{margin-left:auto;font-size:12px;color:var(--muted)}
+.slot-card .s-del{
+  margin-left:8px;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  background:rgba(224,70,63,.15);color:#ffb1ad;font-size:12px;cursor:pointer;flex:0 0 auto;
+}
+.slot-card .s-del:hover{background:rgba(224,70,63,.35)}
+
+/* ---------- wahala factory ---------- */
+.wahala-list{margin-bottom:12px}
+.wahala-form{display:grid;gap:9px;text-align:left}
+.wahala-form input,.wahala-form textarea,.wahala-form select{
+  width:100%;background:var(--panel-strong);border:1px solid var(--line-soft);border-radius:10px;
+  padding:10px 12px;color:var(--ink);font-family:inherit;font-size:13.5px;outline:none;resize:vertical;
+}
+.wahala-form input:focus,.wahala-form textarea:focus,.wahala-form select:focus{border-color:var(--gold)}
+.wf-choice{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.btn-small{padding:5px 10px;font-size:12px;border-radius:9px}
+
 /* ---------- toasts ---------- */
 #toasts{
   position:fixed;top:14px;right:14px;z-index:90;display:flex;flex-direction:column;gap:9px;

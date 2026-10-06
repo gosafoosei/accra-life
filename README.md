@@ -44,6 +44,9 @@ Progress auto-saves to your browser's localStorage.
 | **🗣️ Phrasebook** | A pocket Twi & pidgin guide in the top bar — plus a "phrase of the day" in your story most mornings |
 | **Game over** | Miss rent for 10 days and the landlord changes the locks |
 | **📤 Share card** | Turn any run into a downloadable image card — with a scannable QR code linking to the game — or copy-paste text for the group chat |
+| **💾 Save slots** | Three parallel stories with auto-save. The start screen shows each slot's name, day, money and home — continue any story, or delete it with a confirmation |
+| **🏭 Wahala Factory** | Write your own random events (title, story, two choices with bounded effects like +vibes or +GH₵ 80) — up to 5 live in your city and fire alongside the built-in ones |
+| **🔊 Ambient sound** | Synthesised street ambience while you play — traffic hum, horns by day, crickets at night, rain when it rains — generated live in WebAudio, no audio files. Mute any time |
 
 ## Design notes
 

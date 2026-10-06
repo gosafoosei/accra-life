@@ -656,6 +656,111 @@ function sfx(kind){
   }catch(e){}
 }
 
+/* ---------------- ambient street sound (synthesised, no files) ---------------- */
+let amb = null, hornTimer = null, cricketTimer = null, rainNodes = null, lastAmbSig = '';
+function noiseBuffer(seconds, brown){
+  const buf = AC.createBuffer(1, Math.floor(AC.sampleRate * seconds), AC.sampleRate);
+  const d = buf.getChannelData(0); let last = 0;
+  for (let i = 0; i < d.length; i++){
+    const w = Math.random() * 2 - 1;
+    if (brown){ last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; } else d[i] = w;
+  }
+  return buf;
+}
+function startAmbience(){
+  if (amb) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    const master = AC.createGain(); master.gain.value = 0;
+    master.connect(AC.destination);
+    master.gain.linearRampToValueAtTime(0.55, AC.currentTime + 2.5);
+    const src = AC.createBufferSource(); src.buffer = noiseBuffer(2.5, true); src.loop = true;
+    const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 320;
+    const g = AC.createGain(); g.gain.value = 0.12;
+    src.connect(lp); lp.connect(g); g.connect(master); src.start();
+    amb = { master, src };
+    scheduleHorn();
+  } catch(e){ amb = null; }
+}
+function stopAmbience(){
+  clearTimeout(hornTimer); hornTimer = null;
+  clearInterval(cricketTimer); cricketTimer = null;
+  killRain();
+  if (!amb) return;
+  const n = amb; amb = null;
+  try { n.master.gain.linearRampToValueAtTime(0.0001, AC.currentTime + 0.6); } catch(e){}
+  setTimeout(() => { try { n.src.stop(); } catch(e){} }, 800);
+}
+function scheduleHorn(){
+  clearTimeout(hornTimer);
+  hornTimer = setTimeout(() => {
+    if (amb && S && S.hour >= 6 && S.hour < 22 && Math.random() < 0.8){
+      try {
+        const o = AC.createOscillator(), g = AC.createGain();
+        o.type = 'square'; o.frequency.value = pick([392, 440, 494]);
+        o.connect(g); g.connect(amb.master);
+        const t = AC.currentTime;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(0.035, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+        o.frequency.setValueAtTime(o.frequency.value, t);
+        o.frequency.setValueAtTime(o.frequency.value * 1.26, t + 0.14);
+        o.start(t); o.stop(t + 0.3);
+      } catch(e){}
+    }
+    scheduleHorn();
+  }, ri(6000, 16000));
+}
+function setNightAmb(night){
+  if (night && !cricketTimer){
+    cricketTimer = setInterval(() => {
+      if (!amb) return;
+      try {
+        const o = AC.createOscillator(), g = AC.createGain();
+        o.type = 'sine'; o.frequency.value = 4300 + Math.random() * 400;
+        o.connect(g); g.connect(amb.master);
+        const t = AC.currentTime;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(0.014, t + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+        o.start(t); o.stop(t + 0.45);
+      } catch(e){}
+    }, 900);
+  } else if (!night && cricketTimer){ clearInterval(cricketTimer); cricketTimer = null; }
+}
+function killRain(){
+  if (!rainNodes) return;
+  const n = rainNodes; rainNodes = null;
+  try { n.g.gain.linearRampToValueAtTime(0.0001, AC.currentTime + 1); } catch(e){}
+  setTimeout(() => { try { n.src.stop(); } catch(e){} }, 1200);
+}
+function setRainAmb(on){
+  if (on && !rainNodes){
+    try {
+      const src = AC.createBufferSource(); src.buffer = noiseBuffer(2, false); src.loop = true;
+      const bp = AC.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1500; bp.Q.value = 0.6;
+      const g = AC.createGain(); g.gain.value = 0;
+      src.connect(bp); bp.connect(g); g.connect(amb.master); src.start();
+      g.gain.linearRampToValueAtTime(0.11, AC.currentTime + 1.5);
+      rainNodes = { src, g };
+    } catch(e){ rainNodes = null; }
+  } else if (!on && rainNodes) killRain();
+}
+function updateAmbience(){
+  const inGame = S && !document.getElementById('screen-game').classList.contains('hidden');
+  if (soundOn && inGame && !amb){ lastAmbSig = ''; startAmbience(); }
+  if ((!soundOn || !inGame) && amb) stopAmbience();
+  if (amb && S){
+    const sig = (S.weather || 'clear') + '|' + (S.hour >= 20 || S.hour < 5 ? 'n' : 'd');
+    if (sig !== lastAmbSig){
+      lastAmbSig = sig;
+      setNightAmb(sig.endsWith('n'));
+      setRainAmb(S.weather === 'rain');
+    }
+  }
+}
+
 /* ---------------- logging & toasts ---------------- */
 function logMsg(text, kind){
   S.log.unshift({ d:S.day, h:S.hour, t:text, k:kind || '' });
@@ -703,6 +808,7 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   $('#screen-' + id).classList.remove('hidden');
   window.scrollTo(0, 0);
+  updateAmbience();
 }
 
 /* ---------------- time engine ---------------- */
@@ -772,6 +878,7 @@ function newDayRoll(){
 }
 function maybeEvent(when){
   const pool = EVENTS.filter(e => (!when || e.when === when) && (!e.cond || e.cond()));
+  if (!when || when === 'any') pool.push(...customEventObjects());
   if (!pool.length) return null;
   const total = pool.reduce((a, e) => a + e.w, 0);
   let r = Math.random() * total;
@@ -1360,6 +1467,68 @@ function morningTexts(){
   }
 }
 
+/* ---------------- wahala factory (player-made events) ---------------- */
+const CANNED = [
+  { id:'vibes',  label:'Good vibes', run(){ S.vb = clamp(S.vb + 12, 0, 100); return 'Vibes up. Small small, life dey sweet.'; } },
+  { id:'cash',   label:'Spend GH\u20B5 50, gain vibes', run(){ S.money = Math.max(0, S.money - 50); S.vb = clamp(S.vb + 14, 0, 100); return 'Money went, joy came. Fair trade.'; } },
+  { id:'hustle', label:'Hard work, +GH\u20B5 80', run(){ S.en = clamp(S.en - 15, 0, 100); earn(80); return 'Sweat now, shine later \u2014 GH\u20B5 80 lands via MoMo.'; } },
+  { id:'learn',  label:'Learn something', run(){ S.sm = clamp(S.sm + 6, 0, 100); return 'Book sense +6. Your future self says medaase.'; } },
+  { id:'links',  label:'Make connections', run(){ S.lk = clamp(S.lk + 10, 0, 100); return 'Your circle just got wider. +10 links.'; } },
+  { id:'story',  label:'Just the story', run(){ return 'And so it was. Accra noted it in her little black book.'; } },
+];
+function canned(id){ return CANNED.find(p => p.id === id) || CANNED[5]; }
+function customEventObjects(){
+  return (S.customEvents || []).map((c, i) => ({
+    id:'custom' + i, w:2, when:'any',
+    choice:{
+      title:'\u{1F3ED} ' + esc(c.title),
+      body: c.body,
+      options: [
+        { label: esc(c.aLabel || 'See am'), run(){ return canned(c.aEffect).run(); } },
+        { label: esc(c.bLabel || 'Ignore am'), run(){ return canned(c.bEffect).run(); } },
+      ],
+    },
+  }));
+}
+function openWahala(){
+  const list = (S.customEvents || []).map((c, i) =>
+    `<div class="m-row"><span>\u{1F3ED} ${esc(c.title)}</span><button class="btn btn-ghost btn-small" data-cdel="${i}">\u2715</button></div>`).join('')
+    || '<p class="muted" style="margin:0 0 10px">No custom wahala yet \u2014 build your first below.</p>';
+  const effectOpts = CANNED.map(p => `<option value="${p.id}">${p.label}</option>`).join('');
+  const full = (S.customEvents || []).length >= 5;
+  showModal(`<h3>\u{1F3ED} Wahala Factory</h3>
+    <p class="m-body">Write your own random events into your Accra \u2014 up to 5. They fire while you live, chale.</p>
+    <div class="wahala-list">${list}</div>
+    ${full ? '<p class="a-warn">Factory full (5/5). Delete one to build another.</p>' : `
+    <div class="wahala-form">
+      <input id="wf-title" maxlength="40" placeholder="Event title \u2014 e.g. Goat on the loose">
+      <textarea id="wf-body" maxlength="220" rows="3" placeholder="What happens? \u2014 e.g. A goat enters your room and refuses to leave. The whole compound is watching you."></textarea>
+      <div class="wf-choice"><input id="wf-al" maxlength="34" placeholder="Choice A label \u2014 e.g. Chase the goat"><select id="wf-ae">${effectOpts}</select></div>
+      <div class="wf-choice"><input id="wf-bl" maxlength="34" placeholder="Choice B label \u2014 e.g. Adopt the goat"><select id="wf-be">${effectOpts}</select></div>
+      <button id="wf-save" class="btn btn-gold btn-block">Add to my Accra</button>
+    </div>`}
+    ${modalButtons([{ label:'Close', fn:closeModal }])}`);
+  bindModalButtons([{ label:'Close', fn:closeModal }]);
+  document.querySelectorAll('[data-cdel]').forEach(b => b.addEventListener('click', () => {
+    S.customEvents.splice(+b.dataset.cdel, 1); save(); openWahala();
+  }));
+  const sv = document.getElementById('wf-save');
+  if (sv) sv.addEventListener('click', () => {
+    const title = document.getElementById('wf-title').value.trim();
+    const body = document.getElementById('wf-body').value.trim();
+    if (!title || !body){ toast('Small problem', 'Give the wahala a title and a story first.', 'bad'); return; }
+    S.customEvents.push({
+      title, body,
+      aLabel: document.getElementById('wf-al').value.trim() || 'See am',
+      bLabel: document.getElementById('wf-bl').value.trim() || 'Ignore am',
+      aEffect: document.getElementById('wf-ae').value,
+      bEffect: document.getElementById('wf-be').value,
+    });
+    save(); sfx('ach'); toast('Wahala added!', `\u201C${title}\u201D can now happen to you. Sleep well.`, 'ach', 6000);
+    openWahala();
+  });
+}
+
 /* ---------------- panels ---------------- */
 function openItems(){
   const rows = Object.entries(ITEMS).map(([id, it]) => `
@@ -1421,7 +1590,7 @@ function openHelp(){
 }
 function openRestart(){
   const opts = [
-    { label:'Yes — start over', cls:'btn-danger', fn(){ clearSave(); location.reload(); } },
+    { label:'Yes — start over', cls:'btn-danger', fn(){ clearSlot(slot); location.reload(); } },
     { label:'Cancel', fn:closeModal },
   ];
   showModal(`<h3>Start over?</h3><p class="m-body">This deletes your story, your money, your friendships — everything. The city will not remember you.</p>${modalButtons(opts)}`);
@@ -1540,6 +1709,7 @@ function render(){
 
   updatePhoneBadge();
   if (window.World) World.sync();
+  updateAmbience();
 }
 
 /* ---------------- creation screen ---------------- */
@@ -1578,26 +1748,20 @@ function beginGame(name, handle){
 }
 
 function boot(){
-  $('#btn-new').addEventListener('click', () => { sfx('click'); showScreen('create'); renderCreate(); $('#inp-name').focus(); });
-  $('#btn-continue').addEventListener('click', () => {
-    const saved = loadSave();
-    if (saved){
-      S = saved;
-      // backfill fields added after first release
-      S.rent = S.rent || MONTH_RENT; S.decayMul = S.decayMul || 1; S.homeLevel = S.homeLevel || 0;
-      S.phone = S.phone || { threads:{}, unread:{}, lastDay:{} };
-      if (!S.handle){
-        try { S.handle = localStorage.getItem('accraLifeHandle') || null; } catch(e){}
-      }
-      if (S.handle && window.Chat) Chat.init(S.handle);
-      showScreen('game'); render();
-    }
+  // one-time: any pre-slots save moves into slot 1
+  try {
+    const old = localStorage.getItem(OLD_KEY);
+    if (old && !localStorage.getItem(slotKey(1))) localStorage.setItem(slotKey(1), old);
+  } catch(e){}
+  renderSlots();
+  $('#btn-new').addEventListener('click', () => {
+    const free = [1, 2, 3].find(n => !loadSlot(n));
+    if (!free){ toast('Slots full', 'All three stories are occupied — continue one below or delete a slot.', 'bad', 6000); return; }
+    slot = free; sfx('click'); showScreen('create'); renderCreate(); $('#inp-name').focus();
   });
-  const saved = loadSave();
-  if (saved && saved.name) $('#btn-continue').classList.remove('hidden');
 
   $('#btn-random-name').addEventListener('click', () => { $('#inp-name').value = pick(NAMES); });
-  $('#btn-back-start').addEventListener('click', () => showScreen('start'));
+  $('#btn-back-start').addEventListener('click', () => { renderSlots(); showScreen('start'); });
   $('#btn-begin').addEventListener('click', () => {
     const name = ($('#inp-name').value || '').trim() || pick(NAMES);
     let handle = '';
@@ -1620,9 +1784,11 @@ function boot(){
     soundOn = !soundOn;
     try { localStorage.setItem('accraLifeSound', soundOn ? '1' : '0'); } catch(e){}
     paintSound(); if (soundOn) sfx('click');
+    updateAmbience();
   });
 
   $('#btn-lingo').addEventListener('click', () => { sfx('click'); openLingua(); });
+  $('#btn-wahala').addEventListener('click', () => { sfx('click'); openWahala(); });
   $('#btn-chat').addEventListener('click', () => { sfx('click'); if (window.Chat) Chat.open(); });
   $('#btn-share').addEventListener('click', () => { sfx('click'); openShare(); });
   $('#btn-phone').addEventListener('click', () => { sfx('click'); openPhone(); });
@@ -1631,10 +1797,57 @@ function boot(){
   $('#btn-goals').addEventListener('click', () => { sfx('click'); openGoals(); });
   $('#btn-help').addEventListener('click', () => { sfx('click'); openHelp(); });
   $('#btn-restart').addEventListener('click', openRestart);
-  $('#btn-restart2').addEventListener('click', () => { clearSave(); location.reload(); });
+  $('#btn-restart2').addEventListener('click', () => { clearSlot(slot); location.reload(); });
 
   $('#modal-root').addEventListener('click', e => { if (e.target === $('#modal-root')) closeModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
   window.addEventListener('beforeunload', () => { if (S) save(); });
 }
 document.addEventListener('DOMContentLoaded', boot);
+
+/* ---------------- save slots ---------------- */
+function backfill(s){
+  s.rent = s.rent || MONTH_RENT; s.decayMul = s.decayMul || 1; s.homeLevel = s.homeLevel || 0;
+  s.phone = s.phone || { threads:{}, unread:{}, lastDay:{} };
+  s.customEvents = s.customEvents || [];
+  return s;
+}
+function renderSlots(){
+  const el = $('#slot-list'); if (!el) return;
+  el.innerHTML = [1, 2, 3].map(n => {
+    const saved = loadSlot(n);
+    if (!saved) return `<button class="slot-card empty" data-slot="${n}"><span class="s-num">Slot ${n}</span><span class="s-name">\uFF0B New story</span></button>`;
+    const homes = ['Chamber & hall', 'Self-contained', 'Cantonments apt'];
+    const tag = saved.diff === 'hard' ? ' \u{1F525}' : saved.diff === 'soft' ? ' \u{1F9D8}\u{1F3FE}' : '';
+    return `<span class="slot-card" data-slot="${n}" role="button" tabindex="0">
+      <span class="s-num">Slot ${n}</span>
+      <span class="s-name">${esc(saved.name || '\u2014')} <span class="muted">\u00B7 Day ${saved.day || 1}</span></span>
+      <span class="s-info">${cedis(saved.money || 0)} \u00B7 ${esc(homes[saved.homeLevel || 0])}${tag}</span>
+      <span class="s-del" data-del="${n}" title="Delete this story">\u2715</span></span>`;
+  }).join('');
+  el.querySelectorAll('[data-slot]').forEach(card => card.addEventListener('click', e => {
+    if (e.target.dataset.del) return;
+    const n = +card.dataset.slot;
+    const saved = loadSlot(n);
+    if (saved){
+      slot = n; S = backfill(saved);
+      if (S.handle && window.Chat) Chat.init(S.handle);
+      sfx('ach'); showScreen('game'); render();
+    } else {
+      slot = n; sfx('click'); showScreen('create'); renderCreate(); $('#inp-name').focus();
+    }
+  }));
+  el.querySelectorAll('[data-del]').forEach(x => x.addEventListener('click', e => {
+    e.stopPropagation();
+    openDeleteSlot(+x.dataset.del);
+  }));
+}
+function openDeleteSlot(n){
+  const saved = loadSlot(n);
+  const opts = [
+    { label:'Yes \u2014 delete it', cls:'btn-danger', fn(){ clearSlot(n); closeModal(); renderSlots(); toast('Slot cleared', 'Slot ' + n + ' is empty again.', ''); } },
+    { label:'Keep it', fn:closeModal },
+  ];
+  showModal(`<h3>Delete slot ${n}?</h3><p class="m-body">${saved && saved.name ? esc(saved.name) + '\u2019s story (Day ' + (saved.day || 1) + ') will be gone forever. The city forgets fast.' : 'This slot is already empty.'}</p>${modalButtons(opts)}`);
+  bindModalButtons(opts);
+}
