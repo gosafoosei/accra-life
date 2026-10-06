@@ -56,6 +56,24 @@ const FRIEND_SPOTS = [
   { place:'a kelewele stand at Circle', cost:15, emoji:'\u{1F34C}' },
 ];
 
+const PHRASES = [
+  { t:'Akwaaba', m:'Welcome — the first word every traveller hears in Ghana.' },
+  { t:'\u0190te s\u025Bn?', m:'How are you? Reply: \u0190y\u025B (it\u2019s fine).' },
+  { t:'Me da ase', m:'Thank you.' },
+  { t:'Chale', m:'Friend, bro, dude — the most useful word in Accra.' },
+  { t:'How far?', m:'What\u2019s up? Not a GPS question.' },
+  { t:'We go manage', m:'We\u2019ll make do. Unofficial national motto.' },
+  { t:'Sharp sharp', m:'Quickly, immediately, no wahala.' },
+  { t:'Small small', m:'Little by little — how everything good is built.' },
+  { t:'E dey be', m:'Things are going well.' },
+  { t:'Wahala', m:'Trouble. Avoid it, or embrace it — context matters.' },
+  { t:'I dey feel you', m:'I relate. I respect it.' },
+  { t:'Go slow', m:'Traffic jam. Also a lifestyle.' },
+  { t:'Dumsor', m:'Lights off. The word ECG gave us.' },
+  { t:'Mate!', m:'Hey, trotro conductor — your stop is here.' },
+  { t:'Chop money', m:'Food money, allowance, spending cash.' },
+];
+
 /* -------- locations & actions --------
    eff keys: en energy, fd food, vb vibes, lk links, sm book sense, mo money */
 const LOCS = {
@@ -75,6 +93,11 @@ const LOCS = {
         flavor:'The smoke alarm sings backup vocals. The jollof? Elite.' },
       { id:'wfh', label:'Remote gig (laptop)', icon:'\u{1F4BB}', hrs:4, eff:{en:-24, fd:-10, mo:135}, need:'laptop', needMsg:'Buy a laptop at Accra Mall (and get 30 book sense).', desc:'Emails by day, Excel by night.',
         flavor:'Zoom camera off. \u201CYour network is unstable.\u201D Accra agrees.' },
+      { id:'waterplant', label:'Water your plant', icon:'\u{1FAB4}', hrs:1, eff:{vb:5, en:-2}, showIf:()=>S.plant, desc:'It has one job. Thrive.',
+        flavor:[
+          'You water your plant and tell it about your day. It thrives out of pure respect.',
+          'A new leaf has opened. You are officially a plant person now.',
+        ] },
       { id:'payrent', label:'Pay rent', icon:'\u{1F3E0}\u{1F4B8}', cost:MONTH_RENT, eff:{mo:-MONTH_RENT, vb:14}, showIf:()=>S.rentDue, desc:'Silence the landlord. +14 vibes.', special:'payrent' },
     ],
   },
@@ -225,6 +248,35 @@ const LOCS = {
       { id:'light', label:'Lighthouse photo walk', icon:'\u{1F4F8}', hrs:2, eff:{vb:11, en:-5, sm:2}, desc:'History, colour, ocean air.' },
       { id:'boxing', label:'Train at Bukom gym', icon:'\u{1F94A}', hrs:2, eff:{en:-20, vb:11}, special:'gym', desc:'Sweat like a champion. Body like one, eventually.' },
       { id:'murals', label:'Chase the murals', icon:'\u{1F5BC}\uFE0F', hrs:1, eff:{vb:9, sm:3}, desc:'Chale Wote energy, all year round.' },
+    ],
+  },
+  tema: {
+    name:'Tema Harbour', short:'Tema', emoji:'\u2693', far:true, g1:'#274b63', g2:'#0d1f2b',
+    blurb:'Ghana\u2019s harbour city. Container cranes, fresh fish, sea wind and the smell of big business.',
+    flavor:[
+      'The cranes stack containers like the world\u2019s slowest, most profitable game of Jenga.',
+      'A fisherman mends his net and tells you the sea has moods. Today: good mood.',
+      'The wind off the Gulf of Guinea carries salt, diesel and possibility.',
+    ],
+    actions:[
+      { id:'grilledfish', label:'Harbour-side grilled fish', icon:'\u{1F41F}', hrs:2, cost:40, eff:{fd:72, vb:11}, desc:'Caught this morning. Grilled to order. Life is good.' },
+      { id:'portload', label:'Port load work', icon:'\u{1F4AA}\u{1F3FE}', hrs:3, eff:{en:-24, fd:-10}, special:'portload', desc:'Heavy days pay better. GH\u20B5 50\u2013120.' },
+      { id:'ships', label:'Watch the ships come in', icon:'\u{1F6A2}', hrs:2, eff:{vb:9, sm:3}, desc:'Free cinema, powered by global trade.' },
+    ],
+  },
+  aburi: {
+    name:'Aburi Botanical Gardens', short:'Aburi', emoji:'\u{1F33F}', far:true, g1:'#2f6b3a', g2:'#10291a',
+    blurb:'Cool mountain air an hour above Accra. Palms, lawns, picnics and a little perspective.',
+    flavor:[
+      'The air up here has never met a traffic jam.',
+      'The palms line up like they are posing for your wallpaper.',
+      'Somewhere below, Accra hums. Up here, only leaves.',
+    ],
+    actions:[
+      { id:'picnic', label:'Garden picnic', icon:'\u{1F9FA}', hrs:2, cost:50, eff:{fd:55, vb:17, en:8}, desc:'Waakye with a view of the whole ridge.' },
+      { id:'mountain', label:'Breathe the mountain air', icon:'\u{1F32C}\uFE0F', hrs:2, eff:{en:20, vb:11}, desc:'Nature\u2019s own power nap, no fan needed.' },
+      { id:'palms', label:'Palm-lined photo walk', icon:'\u{1F334}', hrs:2, eff:{vb:10, sm:2}, desc:'Content that looks expensive. It was not.' },
+      { id:'buyplant', label:'Buy a garden plant', icon:'\u{1FAB4}', cost:60, special:'plant', showIf:()=>!S.plant, desc:'A little green friend for your chamber. GH\u20B5 60.' },
     ],
   },
 };
@@ -414,6 +466,9 @@ const ACHS = [
   { id:'fullhouse', icon:'\u{1F392}', name:'Full House', desc:'Own all four big items.', check:S => S.items.powerbank && S.items.generator && S.items.laptop && S.items.jersey },
   { id:'people2', icon:'\u{1F91D}', name:'Man of the People', desc:'All five friendships at 50+.', check:S => Object.values(S.friends).every(v => v >= 50) },
   { id:'prof', icon:'\u{1F393}', name:'Professor', desc:'Max out your book sense (100).', check:S => S.sm >= 100 },
+  { id:'harbour', icon:'\u2693', name:'Harbour Runs', desc:'Make 3 trips to Tema.', check:S => (S.counters.tema || 0) >= 3 },
+  { id:'mountain', icon:'\u{1F33F}', name:'Mountain Air', desc:'Escape to Aburi twice.', check:S => (S.counters.aburi || 0) >= 2 },
+  { id:'green', icon:'\u{1FAB4}', name:'Green Thumb', desc:'Keep a plant alive in East Legon.', check:S => !!S.plant },
 ];
 
 /* ---------------- state ---------------- */
@@ -431,8 +486,8 @@ function freshState(name, skinEmoji, fit, hustleId){
     groceries:false, hustler:false,
     items:{ powerbank:false, generator:false, laptop:false, jersey:false },
     friends:{ kwame:15, abena:15, kofi:15, efua:15, yaw:15 },
-    rentDue:false, rentLateDays:0, startedMonth:1, snapEarned:0,
-    counters:{ waakye:0, parties:0, dumsor:0, beach:0, shifts:0, hangs:0, jollof:0, gym:0, rentPaid:0, earned:0, spent:0, dettyParties:0 },
+    rentDue:false, rentLateDays:0, startedMonth:1, snapEarned:0, plant:false,
+    counters:{ waakye:0, parties:0, dumsor:0, beach:0, shifts:0, hangs:0, jollof:0, gym:0, rentPaid:0, earned:0, spent:0, dettyParties:0, tema:0, aburi:0 },
     ach:{}, log:[],
   };
   const h = HUSTLES.find(x => x.id === hustleId); if (h) h.apply(s);
@@ -566,6 +621,11 @@ function newDayRoll(){
     const f = pick(Object.keys(FRIENDS));
     S.friends[f] = clamp(S.friends[f] + 2, 0, 100);
     logMsg(`${FRIENDS[f].name} sends a morning voice note: \u201CMake we link this week, chale.\u201D`, 'good');
+  }
+  // phrase of the day
+  if (Math.random() < 0.35){
+    const p = pick(PHRASES);
+    logMsg(`\u{1F5E3}\uFE0F Phrase of the day: \u201C${p.t}\u201D — ${p.m}`, 'gold');
   }
   save(); checkAchievements(); render();
 }
@@ -722,6 +782,18 @@ function handleSpecial(locId, act){
       if (S.counters.gym === 5) { logMsg('Five sessions in. Your reflection at the lighthouse window nods approvingly.', 'gold'); }
       logMsg('You train in Bukom, where every coach has trained a champion. You are tired in a holy way.', 'good');
       break;
+    case 'portload': {
+      applyEff({ en:act.eff.en, fd:act.eff.fd });
+      advanceHours(act.hrs);
+      const pay = S.hustler ? ri(70, 150) : ri(50, 120); earn(pay);
+      logMsg(`You spend the morning hauling at the harbour and walk away with ${cedis(pay)}. The sea provides for those who lift.`, 'gold');
+      break;
+    }
+    case 'plant':
+      spend(act.cost); S.plant = true; advanceHours(1);
+      logMsg('You carry a little garden plant all the way from the Aburi hills to East Legon. Your chamber has a new flatmate — quiet, green, judgemental.', 'gold');
+      toast('New flatmate!', '\u{1FAB4} A plant now lives with you. Water it at home for steady vibes.', 'good', 6000);
+      break;
     case 'buy': {
       const item = ITEMS[act.item];
       spend(item.price); S.items[act.item] = true;
@@ -737,13 +809,16 @@ function handleSpecial(locId, act){
 function openTravel(locId){
   if (locId === S.loc){ toast('You are here', 'Look around instead — there\u2019s plenty to do.', ''); return; }
   const target = LOCS[locId];
-  const opts = TRANSPORT.map((t, i) => ({
-    label:`${t.emoji} ${t.label} — ${t.cost ? cedis(t.cost) : 'free'}, ${t.hrs}h`,
-    cls: i === 0 ? 'btn-gold' : 'btn-ghost',
-    fn(){ travelTo(locId, t); },
-  }));
+  const opts = TRANSPORT.filter(t => !target.far || t.id === 'trotro' || t.id === 'bolt').map((t, i) => {
+    const cost = target.far ? t.cost * 4 : t.cost;
+    const hrs = target.far && t.id === 'trotro' ? 2 : t.hrs;
+    const en = (t.en || 0) + (target.far ? -4 : 0);
+    return { label:`${t.emoji} ${t.label} — ${cost ? cedis(cost) : 'free'}, ${hrs}h`, cls: i === 0 ? 'btn-gold' : 'btn-ghost',
+      fn(){ travelTo(locId, { ...t, cost, hrs, en }); } };
+  });
+  const fareNote = target.far ? ' It\u2019s a long one — out-of-town fares apply.' : '';
   showModal(`<h3>To ${esc(target.short)}?</h3>
-    <p class="m-body">${esc(target.blurb)} Pick your ride:</p>
+    <p class="m-body">${esc(target.blurb)}${fareNote} Pick your ride:</p>
     ${modalButtons(opts)}`);
   bindModalButtons(opts);
 }
@@ -755,6 +830,8 @@ function travelTo(locId, t){
   const wasLate = S.hour + t.hrs >= 23;
   advanceHours(t.hrs);
   S.loc = locId;
+  if (locId === 'tema') S.counters.tema = (S.counters.tema || 0) + 1;
+  if (locId === 'aburi') S.counters.aburi = (S.counters.aburi || 0) + 1;
   sfx('click');
   const notes = {
     trotro:'The mate shouts your stop like a prophecy. You arrive.', 
@@ -813,6 +890,91 @@ function hangout(id){
   save(); checkAchievements(); render();
 }
 
+function openLingua(){
+  const rows = PHRASES.map(p => `<div class="lingua-row"><b>${esc(p.t)}</b><span>${esc(p.m)}</span></div>`).join('');
+  showModal(`<h3>\u{1F5E3}\uFE0F Speak like a proper Accrian</h3>
+    <p class="m-body">A pocket phrasebook — Twi essentials and street pidgin. New phrases also land in your story most mornings. Use them well, chale.</p>
+    <div class="lingua-list">${rows}</div>
+    ${modalButtons([{ label:'Medaase — close', cls:'btn-gold', fn:closeModal }])}`);
+  bindModalButtons([{ label:'Medaase — close', cls:'btn-gold', fn:closeModal }]);
+}
+function bestFriend(){
+  let best = Object.keys(FRIENDS)[0], v = -1;
+  for (const [id, rel] of Object.entries(S.friends)){ if (rel > v){ v = rel; best = id; } }
+  return { name: FRIENDS[best].name, rel: Math.round(v) };
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); }
+  catch(e){ toast('Hmm', 'Your browser blocked the clipboard. Screenshot the card instead, chale.', 'bad'); }
+  ta.remove();
+}
+function openShare(){
+  const c = document.createElement('canvas'); c.width = 1000; c.height = 1000;
+  const x = c.getContext('2d');
+  const bg = x.createLinearGradient(0, 0, 1000, 1000);
+  bg.addColorStop(0, '#173427'); bg.addColorStop(1, '#0b110d');
+  x.fillStyle = bg; x.fillRect(0, 0, 1000, 1000);
+  const glow = x.createRadialGradient(500, 170, 60, 500, 170, 520);
+  glow.addColorStop(0, 'rgba(242,201,76,.16)'); glow.addColorStop(1, 'rgba(242,201,76,0)');
+  x.fillStyle = glow; x.fillRect(0, 0, 1000, 1000);
+  // kente bands
+  const cols = ['#f2c94c', '#006b3f', '#e0463f', '#1a1409'];
+  const widths = [74, 48, 38, 62];
+  [60, 912].forEach(y => {
+    let px = 70;
+    while (px < 930){
+      for (let i = 0; i < 4 && px < 930; i++){ x.fillStyle = cols[i]; x.fillRect(px, y, widths[i], 28); px += widths[i] + 8; }
+    }
+  });
+  x.textAlign = 'center';
+  x.fillStyle = '#fff8e7'; x.font = '800 84px Sora, Arial, sans-serif';
+  x.fillText('Accra \u2605 Life', 500, 168);
+  x.font = '96px "Segoe UI Emoji", "Noto Color Emoji", Arial, sans-serif';
+  x.fillText(S.skin, 500, 300);
+  x.fillStyle = '#a8b3a3'; x.font = '600 38px Inter, Arial, sans-serif';
+  x.fillText(`${S.name} \u00B7 Day ${S.day} in the city`, 500, 378);
+  const rows = [
+    ['\u{1F4B5} Earned so far', cedis(S.counters.earned)],
+    ['\u{1F35A} Waakye consumed', String(S.counters.waakye)],
+    ['\u{1F389} Parties survived', String(S.counters.parties)],
+    ['\u{1F50C} Dumsor nights', String(S.counters.dumsor)],
+    ['\u{1F3C6} Achievements', `${Object.keys(S.ach).length} / ${ACHS.length}`],
+    ['\u{1F91D} Day-one friend', `${bestFriend().name} (${bestFriend().rel}/100)`],
+  ];
+  let y = 456;
+  rows.forEach(([k, v]) => {
+    x.textAlign = 'left'; x.fillStyle = '#a8b3a3'; x.font = '500 34px Inter, Arial, sans-serif';
+    x.fillText(k, 170, y);
+    x.textAlign = 'right'; x.fillStyle = '#f2c94c'; x.font = '700 34px Inter, Arial, sans-serif';
+    x.fillText(v, 830, y);
+    y += 66;
+  });
+  x.textAlign = 'center'; x.fillStyle = '#f2c94c'; x.font = '700 34px Inter, Arial, sans-serif';
+  x.fillText('\u25B6 play free \u00B7 gosafoosei.github.io/accra-life', 500, 876);
+  const img = c.toDataURL('image/png');
+  const storyText = `\u{1F30D} Day ${S.day} of my Accra story — earned ${cedis(S.counters.earned)}, ate ${S.counters.waakye} plates of waakye, survived ${S.counters.dumsor} dumsor nights, ${Object.keys(S.ach).length}/${ACHS.length} achievements. Chale, come and play: https://gosafoosei.github.io/accra-life/`;
+  const btns = [
+    { label:'\u2B07\uFE0F Download card', cls:'btn-gold', fn(){
+        const a = document.createElement('a'); a.href = img; a.download = 'accra-life-story.png'; a.click();
+        toast('Card saved', 'Check your downloads, chale.', 'good');
+    }},
+    { label:'\u{1F4CB} Copy my story text', fn(){
+        const done = () => toast('Copied!', 'Your story is on the clipboard. Go and flex — responsibly.', 'good');
+        if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(storyText).then(done).catch(() => fallbackCopy(storyText, done)); }
+        else fallbackCopy(storyText, done);
+    }},
+    { label:'Close', fn:closeModal },
+  ];
+  showModal(`<h3>\u{1F4E4} Your Accra story, ready to flex</h3>
+    <p class="m-body">A share card of your run — for the group chat, the timeline, and your future self.</p>
+    <img class="share-img" src="${img}" alt="Your Accra Life story card">
+    ${modalButtons(btns)}`);
+  bindModalButtons(btns);
+}
+
 /* ---------------- panels ---------------- */
 function openItems(){
   const rows = Object.entries(ITEMS).map(([id, it]) => `
@@ -857,8 +1019,10 @@ function openHelp(){
     \u{1F3E0} Rent of GH\u20B5 800 is due on the 1st of every month. Miss it too long and the story ends.
     \u{1F50C} Dumsor hits at night. Power bank softens it; generator ends it.
     \u{1F465} Link up with friends to build your circle — good friends even send you support.
-    \u{1F3C6} Unlock all 19 achievements. Save happens automatically in your browser.
+    \u{1F3C6} Unlock all 22 achievements. Save happens automatically in your browser.
     \u{1F389} Every 6th month is Detty Season — parties hit harder and Accra never sleeps.
+    \u{1F5E3}\uFE0F Tap \u{1F5E3}\uFE0F for the pocket phrasebook; new phrases land in your story most mornings.
+    \u{1F4E4} Hit \u{1F4E4} anytime to turn your run into a share card for the group chat.
 
     Rule one of Accra: small small, the thing will be alright.</p>
     ${modalButtons([{ label:'Chale, let\u2019s go', cls:'btn-gold', fn:closeModal }])}`);
@@ -970,7 +1134,7 @@ function render(){
     <button class="travel-chip ${id === S.loc ? 'here' : ''}" data-go="${id}" ${id === S.loc ? 'disabled' : ''}>
       <span class="t-emoji">${l.emoji}</span>
       <span class="t-name">${esc(l.short)}</span>
-      <span class="t-fare">${id === S.loc ? 'you dey here' : 'trotro GH\u20B5 6'}</span>
+      <span class="t-fare">${id === S.loc ? 'you dey here' : (l.far ? 'trotro GH\u20B5 25' : 'trotro GH\u20B5 6')}</span>
     </button>`).join('');
   document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => openTravel(b.dataset.go)));
 
@@ -1032,6 +1196,8 @@ function boot(){
     paintSound(); if (soundOn) sfx('click');
   });
 
+  $('#btn-lingo').addEventListener('click', () => { sfx('click'); openLingua(); });
+  $('#btn-share').addEventListener('click', () => { sfx('click'); openShare(); });
   $('#btn-friends').addEventListener('click', () => { sfx('click'); openFriends(); });
   $('#btn-items').addEventListener('click', () => { sfx('click'); openItems(); });
   $('#btn-goals').addEventListener('click', () => { sfx('click'); openGoals(); });

@@ -28,7 +28,7 @@ Progress auto-saves to your browser's localStorage.
 | System | Details |
 | --- | --- |
 | **Character creation** | Name, skin/face, fit (streetwear, kente drip, corporate, beach), and 3 starting hustles (Student / Office / Hustler) with different perks |
-| **11 Accra locations** | Home (East Legon), Makola Market, Oxford Street Osu, Labadi Beach, Tudu waakye joint, Dansoman chop bar, Kwame Nkrumah Circle, Airport City offices, Legon, Accra Mall, Jamestown & Bukom |
+| **13 locations around Ghana** | Home (East Legon), Makola Market, Oxford Street Osu, Labadi Beach, Tudu waakye joint, Dansoman chop bar, Kwame Nkrumah Circle, Airport City offices, Legon, Accra Mall, Jamestown & Bukom — plus day trips to Tema Harbour and the Aburi Botanical Gardens (out-of-town fares apply) |
 | **4 life stats** | ⚡ Energy, 🍚 Food, 😊 Vibes, 👥 Links — plus money (GH₵) and 📚 book sense |
 | **Travel** | Trotro (cheap), keke (fun), Bolt (dignified) or walking — each with different cost, time and side effects |
 | **Random events** | Dumsor, go slow traffic, rains, MoMo promo scams, trotro mate fare arguments, kelewele auntie, jollof debates, Black Stars match days, friend invitations, ECG bills, weddings, water outages, phone snatchers, trotro sermons, WhatsApp-status sales, found money… |
@@ -36,8 +36,10 @@ Progress auto-saves to your browser's localStorage.
 | **Economy** | Shifts at an Airport City job (raises every 10 shifts), market hustles, remote gigs (needs a laptop), rent of GH₵ 800 due on the 1st of every month |
 | **Items** | Power bank, "I-better-pass-my-neighbour" generator, laptop, Black Stars jersey |
 | **5 friends** | Kwame, Abena, Kofi, Efua and Yaw — link up to build relationships; close friends send support |
-| **19 achievements** | From *Akwaaba!* and *Waakye Ambassador* to *Detty Season* and *MoMo Magnate* |
+| **22 achievements** | From *Akwaaba!* and *Waakye Ambassador* to *Harbour Runs*, *Mountain Air* and *MoMo Magnate* |
+| **🗣️ Phrasebook** | A pocket Twi & pidgin guide in the top bar — plus a "phrase of the day" in your story most mornings |
 | **Game over** | Miss rent for 10 days and the landlord changes the locks |
+| **📤 Share card** | Turn any run into a downloadable image card (plus copy-paste text) for the group chat |
 
 ## Design notes
 
