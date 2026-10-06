@@ -75,6 +75,12 @@
         <button id="btn-random-name" class="btn btn-ghost" title="Random Ghanaian name">🎲</button>
       </div>
 
+      <label class="field-label" for="inp-handle">Username <span class="muted">(required — how other players chat with you)</span></label>
+      <div class="name-row">
+        <input id="inp-handle" maxlength="16" placeholder="e.g. accra_ace" autocomplete="off" spellcheck="false">
+      </div>
+      <p id="handle-err" class="a-warn"></p>
+
       <p class="field-label">Skin &amp; face</p>
       <div id="skin-swatches" class="swatch-row"></div>
 
@@ -100,6 +106,7 @@
     <div id="hud" class="hud"><!-- day / time / money / avatar --></div>
     <nav class="top-actions">
       <button id="btn-sound" class="icon-btn" title="Sound on/off">🔊</button>
+      <button id="btn-chat" class="icon-btn" title="Town Square chat">💬</button>
       <button id="btn-lingo" class="icon-btn" title="Speak like a local">🗣️</button>
       <button id="btn-share" class="icon-btn" title="Share your story">📤</button>
       <button id="btn-phone" class="icon-btn" title="Phone">📱<span id="phone-badge" class="badge hidden"></span></button>
@@ -161,5 +168,6 @@
 <noscript><p style="color:#fff;text-align:center;padding:2rem">Accra Life needs JavaScript to run. Please enable it, chale.</p></noscript>
 <script src="game.js"></script>
 <script src="world.js"></script>
+<script src="chat.js"></script>
 </body>
 </html>

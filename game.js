@@ -1257,7 +1257,7 @@ function npcReply(id, text){
 }
 function openPhone(){
   phoneData().unread = {};
-  updatePhoneBadge();
+  updatePhoneBadge(); save();
   renderPhoneList();
 }
 function renderPhoneList(){
@@ -1403,6 +1403,7 @@ function openHelp(){
     \u{26BD} Match days happen everywhere — even the Tema harbour has a derby.
     \u{1F50C} Dumsor hits at night. Power bank softens it; generator ends it.
     \u{1F465} Link up with friends to build your circle — good friends even send you support.
+    \u{1F4AC} Your username puts you in the Town Square: chat with other real players, and DM them by username.
     \u{1F4F1} Your phone holds real chats with your people — text them anytime, they text back in character, and they text YOU first after big moments.
     \u{1F3C6} Unlock all 25 achievements. Save happens automatically in your browser.
     \u{1F9F1} Save up and upgrade your home: chamber \u2192 self-contained \u2192 Cantonments. Better sleep, better vibes.
@@ -1541,6 +1542,10 @@ function render(){
 /* ---------------- creation screen ---------------- */
 function renderCreate(){
   const skinRow = $('#skin-swatches');
+  try {
+    const prevHandle = localStorage.getItem('accraLifeHandle');
+    if (prevHandle && $('#inp-handle') && !$('#inp-handle').value) $('#inp-handle').value = prevHandle;
+  } catch(e){}
   skinRow.innerHTML = SKINS.map((s, i) => `<button class="swatch ${createChoice.skin === i ? 'sel' : ''}" data-skin="${i}">${s}</button>`).join('');
   $('#fit-swatches').innerHTML = FITS.map((f, i) => `<button class="swatch ${createChoice.fit === i ? 'sel' : ''}" data-fit="${i}" title="${f.label}">${f.emoji}</button>`).join('');
   $('#hustle-cards').innerHTML = HUSTLES.map((h, i) => `
@@ -1558,9 +1563,10 @@ function renderCreate(){
 }
 
 /* ---------------- boot ---------------- */
-function beginGame(name){
+function beginGame(name, handle){
   const fit = FITS[createChoice.fit];
   S = freshState(name, SKINS[createChoice.skin], fit, HUSTLES[createChoice.hustle].id, DIFFS[createChoice.diff].id);
+  if (window.Chat && handle){ S.handle = handle; Chat.setHandle(handle); }
   logMsg(`You arrive in Accra with ${cedis(S.money)}, one bag of ambition and zero contacts. Akwaaba, ${S.name}. The city clock starts now.`, 'gold');
   toast('Akwaaba, ' + S.name + '!', 'Day 1 in Accra. Make it count, chale.', 'good', 6000);
   setTimeout(() => toast('\u{1F4A1} Small tip, chale', 'Tap a neighbourhood below to travel. Waakye fixes hunger. The office pays the bills. Sleep restores everything.', '', 8000), 1600);
@@ -1577,6 +1583,10 @@ function boot(){
       // backfill fields added after first release
       S.rent = S.rent || MONTH_RENT; S.decayMul = S.decayMul || 1; S.homeLevel = S.homeLevel || 0;
       S.phone = S.phone || { threads:{}, unread:{}, lastDay:{} };
+      if (!S.handle){
+        try { S.handle = localStorage.getItem('accraLifeHandle') || null; } catch(e){}
+      }
+      if (S.handle && window.Chat) Chat.init(S.handle);
       showScreen('game'); render();
     }
   });
@@ -1587,7 +1597,17 @@ function boot(){
   $('#btn-back-start').addEventListener('click', () => showScreen('start'));
   $('#btn-begin').addEventListener('click', () => {
     const name = ($('#inp-name').value || '').trim() || pick(NAMES);
-    sfx('ach'); beginGame(name);
+    let handle = '';
+    if (window.Chat){
+      handle = Chat.cleanHandle($('#inp-handle') ? $('#inp-handle').value : '');
+      if (!Chat.validHandle(handle)){
+        const err = $('#handle-err');
+        if (err) err.textContent = 'Pick a username first — 3\u201316 letters, numbers or underscores.';
+        if ($('#inp-handle')) $('#inp-handle').focus();
+        return;
+      }
+    }
+    sfx('ach'); beginGame(name, handle);
   });
 
   const sndBtn = $('#btn-sound');
@@ -1600,6 +1620,7 @@ function boot(){
   });
 
   $('#btn-lingo').addEventListener('click', () => { sfx('click'); openLingua(); });
+  $('#btn-chat').addEventListener('click', () => { sfx('click'); if (window.Chat) Chat.open(); });
   $('#btn-share').addEventListener('click', () => { sfx('click'); openShare(); });
   $('#btn-phone').addEventListener('click', () => { sfx('click'); openPhone(); });
   $('#btn-friends').addEventListener('click', () => { sfx('click'); openFriends(); });
